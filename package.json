@@ -1,0 +1,31 @@
+{
+  "name": "github-discord-events",
+  "version": "0.1.0",
+  "description": "Package to customize your GitHub webhook messages to Discord",
+  "main": "./dist/index.js",
+  "type": "module",
+  "scripts": {
+    "prestart": "tsc",
+    "start": "node ."
+  },
+  "keywords": [
+    "github-discord",
+    "webhook-events",
+    "webhook",
+    "discord",
+    "github",
+    "serverless"
+  ],
+  "author": "ghostrider-05",
+  "license": "ISC",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^3.7.1",
+    "@octokit/webhooks-types": "^5.5.1",
+    "discord-api-types": "^0.32.0",
+    "discord.js": "^13.6.0",
+    "typescript": "^4.6.4"
+  },
+  "files": [
+    "dist"
+  ]
+}
