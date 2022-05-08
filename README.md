@@ -33,34 +33,36 @@ Why not another package?
 <summary>Cloudflare Worker</summary>
 
 ```js
-import { GithubEventManager, DiscordWebhookEmbed, createEventRule } from 'github-discord-events'
+import { GitHubEventManager, DiscordWebhookEmbed, createEventRule } from 'github-discord-events'
 
-const manager = new GithubEventManager({
+const manager = new GitHubEventManager({
     rules: {
         webhook: {
             url: 'webhook_url'
         },
         events: [
-            {
+            // Recommended util function for correct types.
+            // In JS the object structure can be used.
+            createEventRule({
                 name: 'issues',
+                actions: ['opened'],
                 // Adds an image to the embed on a new commit
                 transformEmbed: (event, embed) => {
-                    const { after, repository } = event
+                    const { repository, issue } = event
                     const image = DiscordWebhookEmbed.embedImage(
-                        `${repository.full_name}/commits/${after}`
+                        `${repository.full_name}/issues/${issue.number}`
                     )
 
-                    return {
+                    return [{
                         image: {
                             url: image
                         },
                         ...embed
-                    }
+                    }]
                 },
                 // Only apply it on the main branch
                 branches: ['main']
-            },
-            // Improved types
+            }),
             createEventRule({
                 name: 'star',
                 actions: ['created'],
@@ -68,8 +70,8 @@ const manager = new GithubEventManager({
                 transformMessage: ({ repository }) => {
                     const stars = repository.stargazers_count
 
-                    const content = stars % 1000 === 0 
-                        ? `@here We reached ${stars} stars!` 
+                    const content = stars % 1000 === 0
+                        ? `@here We reached ${stars} stars!`
                         : `${stars} stars`
 
                     return {
