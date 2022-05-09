@@ -47,7 +47,7 @@ const manager = new GitHubEventManager({
                 name: 'issues',
                 actions: ['opened'],
                 // Adds an image to the embed on a new commit
-                transformEmbed: (event, embed) => {
+                transformEmbed: (event, embeds) => {
                     const { repository, issue } = event
                     const image = DiscordWebhookEmbed.embedImage(
                         `${repository.full_name}/issues/${issue.number}`
@@ -57,7 +57,7 @@ const manager = new GitHubEventManager({
                         image: {
                             url: image
                         },
-                        ...embed
+                        ...embeds[0]
                     }]
                 },
                 // Only apply it on the main branch
