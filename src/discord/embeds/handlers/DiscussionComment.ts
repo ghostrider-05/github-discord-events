@@ -7,7 +7,7 @@ import {
     stopFilter
 } from "../handler.js";
 
-export const handler: EmbedHandlers['discussionComment'] = (event, options) => {
+export const handler: EmbedHandlers['discussion_comment'] = (event, options) => {
     const { sender, repository, action, discussion, comment } = event
 
     if (stopFilter({ action, ...options })) return

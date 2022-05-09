@@ -7,7 +7,7 @@ import {
     EmbedTitle
 } from "../handler.js";
 
-export const handler: EmbedHandlers['pullRequest'] = (event, options) => {
+export const handler: EmbedHandlers['pull_request'] = (event, options) => {
     const { action, pull_request, sender, repository } = event
 
     if (stopFilter({ ...options, action })) return

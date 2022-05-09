@@ -1,19 +1,5 @@
 import type {
-    CommitCommentEvent,
-    CreateEvent,
-    DeleteEvent,
-    DiscussionCommentEvent,
-    DiscussionEvent,
-    ForkEvent,
-    IssuesEvent,
-    PingEvent,
-    PullRequestEvent,
-    PullRequestReviewCommentEvent,
-    PullRequestReviewEvent,
-    PullRequestReviewThreadEvent,
-    PushEvent,
-    ReleaseEvent,
-    StarEvent,
+    EventPayloadMap,
     User,
     WebhookEvent,
     WebhookEventName
@@ -32,8 +18,10 @@ export type DefaultEmbedCreateOptions = BaseEmbedCreateOptions<WebhookEventName>
 
 // Event embed options
 
+/**@deprecated */
 export type IssuesEmbedCreateOptions = BaseEmbedCreateOptions<'issues' | 'issue_comment'>
 
+/**@deprecated */
 export type PullRequestEmbedCreateOptions = BaseEmbedCreateOptions<
     | 'pull_request'
     | 'pull_request_review'
@@ -41,20 +29,29 @@ export type PullRequestEmbedCreateOptions = BaseEmbedCreateOptions<
     | 'pull_request_review_thread'
 >
 
+/**@deprecated */
 export type PushEmbedCreateOptions = BaseEmbedCreateOptions<'push'>
+/**@deprecated */
 export type PushCommentEmbedCreateOptions = BaseEmbedCreateOptions<'commit_comment'>
 
+/**@deprecated */
 export type PingEmbedCreateOptions = BaseEmbedCreateOptions<'ping'>
 
+/**@deprecated */
 export type BranchEmbedCreateOptions = BaseEmbedCreateOptions<'create' | 'delete'>
 
+/**@deprecated */
 export type DiscussionEmbedCreateOptions = BaseEmbedCreateOptions<'discussion'>
+/**@deprecated */
 export type DiscussionCommentEmbedCreateOptions = BaseEmbedCreateOptions<'discussion_comment'>
 
+/**@deprecated */
 export type ForkEmbedCreateOptions = BaseEmbedCreateOptions<'fork'>
 
+/**@deprecated */
 export type ReleaseEmbedCreateOptions = BaseEmbedCreateOptions<'release'>
 
+/**@deprecated */
 export type StarEmbedCreateOptions = BaseEmbedCreateOptions<'star'>
 
 // Handler
@@ -64,24 +61,56 @@ export type EmbedHandler<
     O extends BaseEmbedCreateOptions<any>
     > = (event: E, options: O) => APIEmbed[] | undefined
 
+export type EmbedHandlerEvent<T extends WebhookEventName> = EmbedHandler<
+    EventPayloadMap[T],
+    BaseEmbedCreateOptions<T>
+>
+
+export const CombinedHandlerKeys = {
+    branch: ['create', 'delete'],
+    issues: ['issue_comment'],
+    pull_request: [
+        'pull_request_review',
+        'pull_request_review_comment',
+        'pull_request_review_thread'
+    ]
+} as const
+
+export type SupportEmbedHandlerKeys =
+    | 'branch'
+    | 'commit_comment'
+    | 'discussion'
+    | 'discussion_comment'
+    | 'fork'
+    | 'issues'
+    | 'ping'
+    | 'pull_request'
+    | 'push'
+    | 'release'
+    | 'star'
+
+type TypedCombinedHandlerKeys = {
+    [P in keyof typeof CombinedHandlerKeys]: (P extends WebhookEventName ? P : never) | typeof CombinedHandlerKeys[P][number]
+}
+
+type EmbedHandlerEventNames<T extends string> = T extends keyof TypedCombinedHandlerKeys ? TypedCombinedHandlerKeys[T] : T
+
+export type SupportedEventNames = EmbedHandlerEventNames<SupportEmbedHandlerKeys>
+
 export type EmbedHandlers = {
-    branch: EmbedHandler<CreateEvent | DeleteEvent, BranchEmbedCreateOptions>,
-    discussion: EmbedHandler<DiscussionEvent, DiscussionEmbedCreateOptions>,
-    discussionComment: EmbedHandler<DiscussionCommentEvent, DiscussionCommentEmbedCreateOptions>,
-    fork: EmbedHandler<ForkEvent, ForkEmbedCreateOptions>,
-    issues: EmbedHandler<IssuesEvent, IssuesEmbedCreateOptions>,
-    ping: EmbedHandler<PingEvent, PingEmbedCreateOptions>
-    pullRequest: EmbedHandler<
-        | PullRequestEvent
-        | PullRequestReviewThreadEvent
-        | PullRequestReviewEvent
-        | PullRequestReviewCommentEvent,
-        PullRequestEmbedCreateOptions
+    [K in SupportEmbedHandlerKeys]: EmbedHandlerEvent<EmbedHandlerEventNames<K>>
+} & {
+    /** @deprecated */
+    pushComment: EmbedHandlerEvent<'commit_comment'>
+    /** @deprecated */
+    discussionComment: EmbedHandlerEvent<'discussion_comment'>
+    /** @deprecated */
+    pullRequest: EmbedHandlerEvent<
+        | 'pull_request'
+        | 'pull_request_review'
+        | 'pull_request_review_comment'
+        | 'pull_request_review_thread'
     >
-    push: EmbedHandler<PushEvent, PushEmbedCreateOptions>
-    pushComment: EmbedHandler<CommitCommentEvent, PushCommentEmbedCreateOptions>
-    release: EmbedHandler<ReleaseEvent, ReleaseEmbedCreateOptions>
-    star: EmbedHandler<StarEvent, StarEmbedCreateOptions>
 }
 
 // Embed

@@ -9,6 +9,7 @@ import { resolveMessage } from './data/resolve.js'
 import { DiscordWebhookUser, DiscordWebhookMessage, fetchWebhook, postWebhook } from './discord/webhook.js'
 
 import type { GitHubEventRule, GitHubEventRulesConfig } from './rules.js'
+import type * as EmbedTypes from './discord/embeds/handler.js'
 
 export type GitHubEventFilter =
     | 'default'
@@ -167,6 +168,7 @@ export {
 export type {
     DiscordWebhookUser,
     DiscordWebhookMessage,
+    EmbedTypes,
     GitHubEventRulesConfig,
     GitHubEventRule
 }

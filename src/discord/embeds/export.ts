@@ -16,12 +16,15 @@ import { handler as StarHandler } from './handlers/Star.js'
 
 export const handlers: EmbedHandlers = {
     branch: BranchHandler,
+    commit_comment: PushCommentHandler,
     discussion: DiscussionHandler,
     discussionComment: DiscussionCommentHandler,
+    discussion_comment: DiscussionCommentHandler,
     fork: ForkHandler,
     issues: IssueHandler,
     ping: PingHandler,
     pullRequest: PullRequestHandler,
+    pull_request: PullRequestHandler,
     push: PushHandler,
     pushComment: PushCommentHandler,
     release: ReleaseHandler,
