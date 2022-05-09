@@ -24,9 +24,13 @@ export type GitHubEventPayloadFilters =
     | 'repos'
     | 'tags'
     // Custom filters
-    | 'skip'
     | 'filter'
     | 'replacedFilter'
+    | GitHubCustomEventRuleFilters
+
+export type GitHubCustomEventRuleFilters =
+    | 'pass'
+    | 'skip'
 
 export interface GitHubEventRule<T extends WebhookEventName = WebhookEventName> {
     /**
@@ -98,7 +102,12 @@ export interface GitHubEventRule<T extends WebhookEventName = WebhookEventName> 
 
     /**
      * Whether to skip this rule and continue with other event rules / the main rule.
-     * 
+     */
+    pass?: boolean | ((event: GitHubEventPayload<T>) => boolean)
+
+    /**
+     * Whether to skip this event. 
+     * If skipped on any rule, the event will not continue (also not on the main rule).
      */
     skip?: boolean | ((event: GitHubEventPayload<T>) => boolean)
 
@@ -160,7 +169,7 @@ export interface GitHubEventRule<T extends WebhookEventName = WebhookEventName> 
 
 export interface GitHubEventRulesConfig extends Omit<GitHubEventRule & {
     webhook: WebhookClientData
-}, 'name' | 'skip'> {
+}, 'name' | GitHubCustomEventRuleFilters> {
     // GitHub
 
     /**

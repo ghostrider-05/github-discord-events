@@ -3,7 +3,12 @@ import type { WebhookEvent, WebhookEventName, Label, Milestone } from "@octokit/
 import { emittedEvents } from "./discord/events.js";
 
 import type { GitHubLabelData, GitHubMileStoneData } from "./github.js";
-import type { GitHubEventRule, GitHubEventRulesConfig, GitHubEventPayloadFilters } from "./rules.js";
+import type {
+    GitHubEventRule,
+    GitHubEventRulesConfig,
+    GitHubCustomEventRuleFilters,
+    GitHubEventPayloadFilters
+} from "./rules.js";
 
 function isDefined(...data: (unknown | null | undefined)[]) {
     return data.every(key => key != undefined && key != null)
@@ -43,7 +48,7 @@ interface BaseGitHubRuleData {
 }
 
 interface GitHubRuleData extends BaseGitHubRuleData {
-    rule: GitHubEventRule | Omit<GitHubEventRule, 'name' | 'skip'>,
+    rule: GitHubEventRule,
     isMainRule?: boolean
 }
 
@@ -111,12 +116,16 @@ class GitHubFilters {
     }
 }
 
-function checkSkipFilter(event: WebhookEvent, rule: GitHubRuleData['rule']) {
-    const skip = 'skip' in rule ? rule.skip : undefined
+function checkCustomFilter(
+    event: WebhookEvent,
+    rule: GitHubRuleData['rule'],
+    key: GitHubCustomEventRuleFilters
+) {
+    const value = key in rule ? rule[key] : undefined
+    if (value == undefined) return undefined
 
-    if (skip == undefined) return undefined
-    const result = typeof skip === 'boolean' ? skip : skip(event)
-    return result ? 'skip' : undefined
+    const result = typeof value === 'boolean' ? value : value(event)
+    return result ? key : undefined
 }
 
 function checkGitHubRule(ruleData: GitHubRuleData) {
@@ -128,7 +137,8 @@ function checkGitHubRule(ruleData: GitHubRuleData) {
 
     const replaceFilter = rule.addReplacingFilter?.(event)
     const failedAction =
-        checkSkipFilter(event, rule)
+        checkCustomFilter(event, rule, 'skip')
+            ?? checkCustomFilter(event, rule, 'pass')
             ?? (typeof replaceFilter === 'boolean' ? !replaceFilter ? 'replacedFilter' : false : undefined)
             ?? GitHubFilters.filterName(ruleData)
             ?? GitHubFilters.filterRepo(event, repos)
@@ -140,6 +150,7 @@ function checkGitHubRule(ruleData: GitHubRuleData) {
 
     if (failedAction) {
         rule.onFailed?.(failedAction, event, lifecycleRule)
+        if (failedAction === 'skip') return 'skip'
         return
     }
 
@@ -149,27 +160,37 @@ function checkGitHubRule(ruleData: GitHubRuleData) {
     return !isMainRule ? rule : true
 }
 
-export function checkGitHubRules(options: GitHubRulesData) {
+function checkEventRules(options: GitHubRulesData) {
     const { event, filterEvents, name, rules } = options
+    let skipEvent = false
+
+    const rule = rules.events?.find(rule => {
+        const result = checkGitHubRule({
+            rule,
+            event,
+            filterEvents,
+            name
+        })
+
+        if (result === 'skip') skipEvent = true
+        return result
+    })
+
+    return skipEvent ? undefined : rule
+}
+
+export function checkGitHubRules(options: GitHubRulesData) {
+    const { rules } = options
 
     if (rules.events && rules.events.length > 0) {
-        const eventRule = rules.events.find(rule => {
-            return checkGitHubRule({
-                rule,
-                event,
-                filterEvents,
-                name
-            })
-        })
+        const eventRule = checkEventRules(options)
 
         if (eventRule) return eventRule
     }
 
     const ok = checkGitHubRule({
-        rule: rules,
-        event,
-        name,
-        filterEvents,
+        rule: <GitHubEventRule>rules,
+        ...options,
         isMainRule: true
     })
 
