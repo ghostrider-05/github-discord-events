@@ -25,7 +25,7 @@ Why not another package?
 1. Go to your repository or user / organization settings on GitHub and create a new webhook with the events you want to send. The url is the url of the server you are running the application on.
 1. Deploy the code with your rules on the server*.
 
-\* Can either be on the [website]() or self hosted on a VPS server or serverless platform like Cloudflare Workers.
+\* Can either be on the [website]() or self hosted on a VPS server (node v18 or higher) or serverless platform like Cloudflare Workers.
 
 ## Examples
 
@@ -33,54 +33,50 @@ Why not another package?
 <summary>Cloudflare Worker</summary>
 
 ```js
-import { GitHubEventManager, DiscordWebhookEmbed, createEventRule } from 'github-discord-events'
+import { GitHubEventManager, DiscordWebhookEmbed, RuleBuilder } from 'github-discord-events'
+
+const rules = new RuleBuilder({ url: 'webhook_url' })
+    .addEvent({
+        name: 'issues',
+        actions: ['opened'],
+        // Adds an image to the embed on a new commit
+        transformEmbed: (event, embeds) => {
+            const { repository, issue } = event
+            const image = DiscordWebhookEmbed.embedImage(
+                `${repository.full_name}/issues/${issue.number}`
+            )
+
+            const embed = embeds?.[0] ?? {}
+
+            return [{
+                image: {
+                    url: image
+                },
+                ...embed
+            }]
+        },
+        // Only apply it on the main branch
+        branches: ['main']
+    })
+    .addEvent({
+        name: 'star',
+        actions: ['created'],
+        threadId: '0123', // A star counting thread
+        transformMessage: ({ repository }) => {
+            const stars = repository.stargazers_count
+
+            const content = stars % 1000 === 0
+                ? `@here We reached ${stars} stars!`
+                : `${stars} stars`
+
+            return {
+                content
+            }
+        }
+    })
 
 const manager = new GitHubEventManager({
-    rules: {
-        webhook: {
-            url: 'webhook_url'
-        },
-        events: [
-            // Recommended util function for correct types.
-            // In JS the object structure can be used.
-            createEventRule({
-                name: 'issues',
-                actions: ['opened'],
-                // Adds an image to the embed on a new commit
-                transformEmbed: (event, embeds) => {
-                    const { repository, issue } = event
-                    const image = DiscordWebhookEmbed.embedImage(
-                        `${repository.full_name}/issues/${issue.number}`
-                    )
-
-                    return [{
-                        image: {
-                            url: image
-                        },
-                        ...embeds[0]
-                    }]
-                },
-                // Only apply it on the main branch
-                branches: ['main']
-            }),
-            createEventRule({
-                name: 'star',
-                actions: ['created'],
-                threadId: '0123', // A star counting thread
-                transformMessage: ({ repository }) => {
-                    const stars = repository.stargazers_count
-
-                    const content = stars % 1000 === 0
-                        ? `@here We reached ${stars} stars!`
-                        : `${stars} stars`
-
-                    return {
-                        content
-                    }
-                }
-            })
-        ]
-    }
+    rules
 })
 
 addEventListener('fetch', event => {

@@ -59,6 +59,61 @@ export interface GitHubEventManagerOptions {
 //     action: string
 // }
 
+/**
+ * Builder for creating filter rules
+ */
+export class RuleBuilder {
+    /**
+     * The created rule configuration
+     */
+    public rules: GitHubEventRulesConfig
+
+    constructor(webhook: GitHubEventRulesConfig['webhook']) {
+        this.rules = {
+            webhook
+        }
+    }
+
+    /**
+     * Set a filter on the main rule
+     * @param key The name of filter
+     * @param value The new value of the filter
+     */
+    public setFilter<
+        K extends keyof Omit<GitHubEventRulesConfig, 'webhook' | 'events'>
+    >(key: K, value: GitHubEventRulesConfig[K]) {
+        this.rules[key] = value
+
+        return this
+    }
+
+    /**
+     * Add an event rule for filtering events on their name
+     * @param event The event rule
+     */
+    public addEvent<T extends WebhookEventName>(event: GitHubEventRule<T>): this {
+        this.rules.events ??= []
+
+        this.rules.events.push(<never>event)
+
+        return this
+    }
+
+    /**
+     * Returns an object containing the rules
+     */
+    public toJSON(): GitHubEventRulesConfig {
+        return this.rules
+    }
+
+    /**
+     * String representation of the rules.
+     */
+    public toString(): string {
+        return JSON.stringify(this.toJSON())
+    }
+}
+
 export class GitHubEventManager {
     public rules: GitHubEventRulesConfig
     public webhookUser: DiscordWebhookUser
