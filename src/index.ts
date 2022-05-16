@@ -1,12 +1,15 @@
 import type { WebhookEvent, WebhookEventName } from '@octokit/webhooks-types'
-import type { RESTGetAPIWebhookWithTokenResult } from 'discord-api-types/v9'
-import type { WebhookClientData } from 'discord.js'
 
 import { defaultWebhookUser } from './data/Constants.js'
 import { DiscordWebhookEmbed } from './discord/embed.js'
 import { checkGitHubRules } from './filter.js'
-import { resolveMessage } from './data/resolve.js'
-import { DiscordWebhookUser, DiscordWebhookMessage, fetchWebhook, postWebhook } from './discord/webhook.js'
+import { Resolvers } from './data/resolve.js'
+import {
+    DiscordWebhookUser,
+    DiscordWebhookMessage,
+    WebhookManager,
+    WebhookStorage
+} from './discord/webhook.js'
 
 import type { GitHubEventRule, GitHubEventRulesConfig } from './rules.js'
 import type * as EmbedTypes from './discord/embeds/handler.js'
@@ -52,6 +55,10 @@ export interface GitHubEventManagerOptions {
     //enhanceMarkdown?: boolean
 }
 
+// export interface EventResponseBody {
+//     action: string
+// }
+
 export class GitHubEventManager {
     public rules: GitHubEventRulesConfig
     public webhookUser: DiscordWebhookUser
@@ -59,43 +66,21 @@ export class GitHubEventManager {
 
     public readonly apiVersion: number
 
-    private fetchedWebhooks: Record<string, RESTGetAPIWebhookWithTokenResult | undefined> = {}
-    private fetchWebhook: 'all' | 'stored' | 'never'
-    //private ruleQueue: [GitHubEventRule, number][] = []
-
     constructor(options: GitHubEventManagerOptions) {
-        this.rules = options.rules
+        this.rules = options.rules instanceof RuleBuilder ? options.rules.toJSON() : options.rules
         this.webhookUser = options.user ?? defaultWebhookUser
         this.filter = options.filter ?? 'default'
 
         this.apiVersion = options.apiVersion ?? 9
 
-        this.fetchWebhook = options.fetchWebhook ?? 'never'
-    }
-
-    private async _getWebhook(data: WebhookClientData) {
-        const id = 'id' in data ? data.id : data.url
-
-        if (this.fetchWebhook === 'never') {
-            return this.fetchedWebhooks[id]
-
-        } else if (this.fetchWebhook === 'stored' && this.fetchedWebhooks[id]) {
-            return this.fetchedWebhooks[id]
-
-        } else {
-            const webhook = await fetchWebhook({ ...data, version: this.apiVersion })
-
-            this.fetchedWebhooks[id] = webhook
-
-            return webhook
-        }
+        WebhookStorage.setAction(options.fetchWebhook)
     }
 
     private async _validateEvent(request: Request) {
         const name = request.headers.get('X-GitHub-Event') as WebhookEventName
         const event = await request.json() as WebhookEvent
 
-        if (!name || event) return undefined
+        if (!name || !event) return undefined
         else return {
             name, event
         }
@@ -126,18 +111,19 @@ export class GitHubEventManager {
             const embeds = rule.transformEmbed?.(event, defaultEmbed) ?? defaultEmbed
             const message = rule.transformMessage?.(event, embeds) ?? (embeds ? { embeds } : {})
 
-            const data = resolveMessage(message, this.webhookUser)
+            const data = Resolvers.message(message, this.webhookUser)
             const webhook = rule.webhook ?? this.rules.webhook
+            const webhookManager = new WebhookManager({
+                version: this.apiVersion,
+                ...webhook
+            })
 
             if (this.rules.onBeforeActivated != undefined) {
-                const webhookData = await this._getWebhook(webhook)
+                const webhookData = await webhookManager.get()
                 await this.rules.onBeforeActivated(message, webhookData, 'name' in rule ? rule : undefined)
             }
 
-            return await postWebhook({
-                ...webhook,
-                version: this.apiVersion
-            }, data, {
+            return await webhookManager.post(data, {
                 thread_id: rule.threadId,
                 wait: rule.wait
             })
@@ -151,6 +137,7 @@ export class GitHubEventManager {
 /**
  * Util function to strongly type the event payload. 
  * Can be used instead of the json structure.
+ * @deprecated
  */
 function createEventRule<T extends WebhookEventName>(event: GitHubEventRule<T>): GitHubEventRule {
     return event as unknown as GitHubEventRule // ??

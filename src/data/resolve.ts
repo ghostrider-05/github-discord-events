@@ -14,7 +14,7 @@ function addQueryUrl(url: string, query: Record<string, any>) {
     return url + (Query !== '' ? `?${Query}` : '')
 }
 
-export const resolveWebhook = (data: WebhookClientData, query: RESTPostAPIWebhookWithTokenQuery, v: number) => {
+const resolveWebhook = (data: WebhookClientData, query: RESTPostAPIWebhookWithTokenQuery, v: number) => {
     const webhookUrl = (id: string, token: string) => `https://discord.com/api/v${v}/${id}/${token}`
 
     if (!('url' in data || 'id' in data)) {
@@ -26,13 +26,13 @@ export const resolveWebhook = (data: WebhookClientData, query: RESTPostAPIWebhoo
     return addQueryUrl(url, query)
 }
 
-export const resolveBody = (data: string | null | undefined, maxLength: number) => {
+const resolveBody = (data: string | null | undefined, maxLength: number) => {
     if (!data) return undefined
     else if (data.length < maxLength) return data
     else return data.slice(0, maxLength).concat('...')
 }
 
-export const resolveMessage = (
+const resolveMessage = (
     message: DiscordWebhookMessage,
     user?: DiscordWebhookUser
 ): RESTPostAPIWebhookWithTokenJSONBody => {
@@ -42,4 +42,10 @@ export const resolveMessage = (
         username,
         avatar_url: avatarURL
     }
+}
+
+export const Resolvers = {
+    body: resolveBody,
+    message: resolveMessage,
+    webhook: resolveWebhook
 }

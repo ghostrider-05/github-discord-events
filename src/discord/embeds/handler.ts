@@ -6,7 +6,8 @@ import type {
 } from "@octokit/webhooks-types"
 import type { APIEmbed } from "discord-api-types/v9"
 
-import { resolveBody } from "../../data/resolve.js"
+import { Formatters } from "../../data/format.js"
+import { Resolvers } from "../../data/resolve.js"
 
 export interface BaseEmbedCreateOptions<T extends WebhookEventName> {
     name: Extract<WebhookEventName, T>
@@ -76,18 +77,24 @@ export const CombinedHandlerKeys = {
     ]
 } as const
 
-export type SupportEmbedHandlerKeys =
-    | 'branch'
-    | 'commit_comment'
-    | 'discussion'
-    | 'discussion_comment'
-    | 'fork'
-    | 'issues'
-    | 'ping'
-    | 'pull_request'
-    | 'push'
-    | 'release'
-    | 'star'
+export const SupportedHandlerKeyNames = [
+    'branch',
+    'commit_comment',
+    'discussion',
+    'discussion_comment',
+    'fork',
+    'issues',
+    'ping',
+    'pull_request',
+    'push',
+    'release',
+    'star'
+] as const
+
+/** @deprecated */
+export type SupportEmbedHandlerKeys = typeof SupportedHandlerKeyNames[number]
+
+export type SupportedEmbedHandlerKeys = typeof SupportedHandlerKeyNames[number]
 
 type TypedCombinedHandlerKeys = {
     [P in keyof typeof CombinedHandlerKeys]: (P extends WebhookEventName ? P : never) | typeof CombinedHandlerKeys[P][number]
@@ -116,20 +123,26 @@ export type EmbedHandlers = {
 // Embed
 
 export const EmbedTitle = new class EmbedTitle {
+    public formatters = new Formatters()
+
+    /** @deprecated */
     public format(input: string) {
-        return input[0].toUpperCase() + input.slice(1)
+        return this.formatters.capitalize(input)
     }
 
+    /** @deprecated */
     public formatAction(action: string) {
-        return action.includes('_') ? action.split('_').join(' ') : action
+        return this.formatters.action(action)
     }
 
+    /** @deprecated */
     public formatCommitId(id: string) {
-        return id.slice(0, 7)
+        return this.formatters.commitId(id)
     }
 
+    /** @deprecated */
     public formatRef(ref: string) {
-        return ref.slice(ref.lastIndexOf('/') + 1)
+        return this.formatters.ref(ref)
     }
 
     public fork(repository: string, fork: string) {
@@ -184,7 +197,7 @@ export const EmbedTitle = new class EmbedTitle {
 
 export function embedData(body: string | null | undefined, sender: User, limit?: number): APIEmbed {
     return {
-        description: resolveBody(body, limit ?? 500),
+        description: Resolvers.body(body, limit ?? 500),
         author: {
             name: sender.login,
             icon_url: sender.avatar_url,

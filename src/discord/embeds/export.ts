@@ -1,6 +1,5 @@
 import { EmbedHandlers } from './handler.js'
 
-// TODO: simplify
 // TODO: add more events
 import { handler as BranchHandler } from './handlers/Branch.js'
 import { handler as DiscussionHandler } from './handlers/Discussion.js'
