@@ -79,6 +79,14 @@ export class RuleBuilder {
     }
 
     /**
+     * Create a new rule with types
+     * @param event The event rule data
+     */
+    public static event <T extends WebhookEventName>(event: GitHubEventRule<T>): GitHubEventRule {
+        return event as unknown as GitHubEventRule // Check workflow_run
+    }
+
+    /**
      * Set a filter on the main rule
      * @param key The name of filter
      * @param value The new value of the filter
@@ -231,7 +239,7 @@ export class GitHubEventManager {
 /**
  * Util function to strongly type the event payload. 
  * Can be used instead of the json structure.
- * @deprecated
+ * @deprecated Use {@link RuleBuilder.event} instead
  */
 function createEventRule<T extends WebhookEventName>(event: GitHubEventRule<T>): GitHubEventRule {
     return event as unknown as GitHubEventRule // ??
