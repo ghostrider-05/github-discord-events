@@ -55,9 +55,13 @@ export interface GitHubEventManagerOptions {
     //enhanceMarkdown?: boolean
 }
 
-// export interface EventResponseBody {
-//     action: string
-// }
+export interface EventResponseBody {
+    completed: boolean
+    event: WebhookEvent | undefined
+    action?: string
+    rule?: GitHubEventRule
+    eventName?: string
+}
 
 /**
  * Builder for creating filter rules
@@ -141,11 +145,33 @@ export class GitHubEventManager {
         }
     }
 
+    private getResponse (options: { status: number, statusText: string } & EventResponseBody) {
+        const { status, statusText, ...body } = options
+
+        return new Response(JSON.stringify(body), {
+            status,
+            statusText,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+    }
+
+    /**
+     * Handle an incoming request (via https, proxy, etc.) and perform actions based on the rules.
+     * Use lifecycle hooks to add custom actions.
+     * @param request The incoming request from your server
+     * @returns The response whether the request was handled succesfully.
+     * The response will contain the appropiate status and status text with a human readable summary / error.
+     * The response body will contain a JSON object ({@link EventResponseBody}) with a more detailed response.
+     */
     public async handleEvent(request: Request) {
         const data = await this._validateEvent(request)
-        if (!data) return new Response('', {
+        if (!data) return this.getResponse({
             statusText: 'Received invalid github webhook event',
-            status: 500
+            status: 500,
+            completed: false,
+            event: data
         })
 
         const { event, name } = data
@@ -178,13 +204,26 @@ export class GitHubEventManager {
                 await this.rules.onBeforeActivated(message, webhookData, 'name' in rule ? rule : undefined)
             }
 
-            return await webhookManager.post(data, {
+            const completed = await webhookManager.post(data, {
                 thread_id: rule.threadId,
                 wait: rule.wait
+            }).then(res => res.ok)
+
+            return this.getResponse({
+                status: completed ? 200 : 500,
+                statusText: 'Completed GitHub event',
+                completed: true,
+                event,
+                eventName: name,
+                action: 'action' in event ? event.action : undefined
             })
-        } else return new Response('', {
-            statusText: 'Received github event, but no rules matched',
-            status: 404
+
+        } else return this.getResponse({
+            status: 404,
+            statusText: 'Received GitHub event, but no rules matched',
+            event,
+            eventName: name,
+            completed: false
         })
     }
 }
