@@ -1,4 +1,4 @@
-import type { WebhookEvent, WebhookEventName } from "@octokit/webhooks-types"
+import type { WebhookEvent } from "@octokit/webhooks-types"
 
 import { handlers } from './embeds/export.js'
 import {
