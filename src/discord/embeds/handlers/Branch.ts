@@ -1,21 +1,19 @@
 import {
-    APIEmbed,
-    embedData,
     EmbedHandlers,
-    EmbedTitle
+    Embed
 } from "../handler.js";
 
 export const handler: EmbedHandlers['branch'] = (event, options) => {
     const { sender, repository, ref, ref_type } = event
 
-    const embed: APIEmbed = {
-        ...embedData(undefined, sender),
-        title: EmbedTitle.branch(repository.full_name, {
-            name: EmbedTitle.formatRef(ref),
-            action: options.name,
-            type: ref_type
-        })
-    }
+    const title = Embed.Title.branch(repository.full_name, {
+        name: Embed.Title.formatters.ref(ref),
+        action: options.name,
+        type: ref_type
+    })
+
+    const { embed } = new Embed(sender)
+        .setTitle(title)
 
     return [embed]
 }

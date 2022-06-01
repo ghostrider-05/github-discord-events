@@ -8,6 +8,7 @@ import type { APIEmbed } from "discord-api-types/v9"
 
 import { Formatters } from "../../data/format.js"
 import { Resolvers } from "../../data/resolve.js"
+import { DiscordEmbedColors } from "./colors.js"
 
 export interface BaseEmbedCreateOptions<T extends WebhookEventName> {
     name: Extract<WebhookEventName, T>
@@ -68,27 +69,46 @@ export type EmbedHandlerEvent<T extends WebhookEventName> = EmbedHandler<
 >
 
 export const CombinedHandlerKeys = {
+    alert: ['code_scanning_alert', 'repository_vulnerability_alert'],
     branch: ['create', 'delete'],
+    check: ['check_suite', 'check_run'],
+    deployment: ['deployment_status'],
     issues: ['issue_comment'],
     pull_request: [
         'pull_request_review',
         'pull_request_review_comment',
         'pull_request_review_thread'
-    ]
+    ],
+    star: ['watch'],
+    team: ['team_add']
 } as const
 
+// TODO: do not include group event names
 export const SupportedHandlerKeyNames = [
+    'alert',
     'branch',
+    'branch_protection_rule',
+    'check',
     'commit_comment',
+    'deploy_key',
+    'deployment',
     'discussion',
     'discussion_comment',
     'fork',
+    'gollum',
     'issues',
     'ping',
     'pull_request',
+    'public',
     'push',
     'release',
-    'star'
+    'repository',
+    'repository_import',
+    'sponsorship',
+    'star',
+    'status',
+    'team',
+    'workflow_job',
 ] as const
 
 /** @deprecated */
@@ -102,10 +122,11 @@ type TypedCombinedHandlerKeys = {
 
 type EmbedHandlerEventNames<T extends string> = T extends keyof TypedCombinedHandlerKeys ? TypedCombinedHandlerKeys[T] : T
 
-export type SupportedEventNames = EmbedHandlerEventNames<SupportEmbedHandlerKeys>
+export type SupportedEventNames = EmbedHandlerEventNames<SupportedEmbedHandlerKeys>
 
+const t: SupportedEventNames = 'code_scanning_alert'
 export type EmbedHandlers = {
-    [K in SupportEmbedHandlerKeys]: EmbedHandlerEvent<EmbedHandlerEventNames<K>>
+    [K in SupportedEmbedHandlerKeys]: EmbedHandlerEvent<EmbedHandlerEventNames<K>>
 } & {
     /** @deprecated */
     pushComment: EmbedHandlerEvent<'commit_comment'>
@@ -195,14 +216,53 @@ export const EmbedTitle = new class EmbedTitle {
     }
 }
 
-export function embedData(body: string | null | undefined, sender: User, limit?: number): APIEmbed {
-    return {
-        description: Resolvers.body(body, limit ?? 500),
-        author: {
-            name: sender.login,
-            icon_url: sender.avatar_url,
-            url: sender.url
+/**
+ * Internal embed builder
+ */
+export class Embed {
+    public embed: APIEmbed
+
+    constructor (sender: User) {
+        this.embed = {
+            author: {
+                name: sender.login,
+                icon_url: sender.avatar_url,
+                url: sender.url
+            }
         }
+    }
+
+    public static Title = EmbedTitle
+
+    public setColor (...options: Parameters<typeof DiscordEmbedColors['resolveColor']>) {
+        const color = DiscordEmbedColors.resolveColor(...options)
+        this.embed.color = color
+
+        return this
+    }
+
+    public setDescription (body?: string | null, limit?: number) {
+        this.embed.description = Resolvers.body(body, limit ?? 500)
+
+        return this
+    }
+
+    public setTitle (title: string) {
+        this.embed.title = title
+
+        return this
+    }
+
+    public setActionTitle (...options: Parameters<typeof EmbedTitle['formatters']['actionTitle']>) {
+        const title = EmbedTitle.formatters.actionTitle(...options)
+
+        return this.setTitle(title)
+    }
+
+    public setUrl (url: string | null | undefined) {
+        if (url) this.embed.url = url
+
+        return this
     }
 }
 

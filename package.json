@@ -19,11 +19,11 @@
   "author": "ghostrider-05",
   "license": "ISC",
   "devDependencies": {
-    "@cloudflare/workers-types": "^3.7.1",
+    "@cloudflare/workers-types": "^3.11.0",
     "@octokit/webhooks-types": "^5.6.0",
     "discord-api-types": "^0.32.1",
-    "discord.js": "^13.6.0",
-    "typescript": "^4.6.4"
+    "discord.js": "^13.7.0",
+    "typescript": "^4.7.2"
   },
   "files": [
     "dist"

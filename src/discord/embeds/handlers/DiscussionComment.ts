@@ -1,26 +1,19 @@
 import {
-    APIEmbed,
-    DiscordEmbedColors,
-    embedData,
-    EmbedHandlers,
-    EmbedTitle,
-    stopFilter
+    Embed,
+    EmbedHandlers
 } from "../handler.js";
 
 export const handler: EmbedHandlers['discussion_comment'] = (event, options) => {
     const { sender, repository, action, discussion, comment } = event
 
-    if (stopFilter({ action, ...options })) return
-
-    const embed: APIEmbed = {
-        ...embedData(comment.body, sender),
-        color: DiscordEmbedColors.resolveColor(action, options),
-        url: comment.html_url,
-        title: EmbedTitle.comment(repository.name, {
+    const { embed } = new Embed(sender)
+        .setColor(action, options)
+        .setDescription(comment.body)
+        .setUrl(comment.html_url)
+        .setTitle(Embed.Title.comment(repository.name, {
             action,
             on: `discussion #${discussion.number}: ${discussion.title}`
-        })
-    }
+        }))
 
     return [embed]
 }

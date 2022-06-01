@@ -8,27 +8,27 @@ If an event is not yet supported, you can add an event rule to send messages.
 
 | Name                           | Supported |
 | ------------------------------ | --------- |
-| branch_protection_rule         |           |
-| check_run                      |           |
-| check_suite                    |           |
-| code_scanning_alert            |           |
+| branch_protection_rule         | x         |
+| check_run                      | x         |
+| check_suite                    | x         |
+| code_scanning_alert            | x         |
 | commit_comment                 | x         |
 | create                         | x         |
 | delete                         | x         |
-| deploy_key                     |           |
-| deployment                     |           |
-| deployment_status              |           |
+| deploy_key                     | x         |
+| deployment                     | x         |
+| deployment_status              | x         |
 | discussion                     | x         |
 | discussion_comment             | x         |
 | fork                           | x         |
-| github_app_authorization       |           |
-| gollum                         |           |
-| installation                   |           |
-| installation_repositories      |           |
+| github_app_authorization*      | -         |
+| gollum                         | x         |
+| installation*                  | -         |
+| installation_repositories*     | -         |
 | issue_comment                  | x         |
 | issues                         | x         |
 | label                          |           |
-| marketplace_purchase           |           |
+| marketplace_purchase*          | -         |
 | member                         |           |
 | membership                     |           |
 | meta                           |           |
@@ -41,28 +41,32 @@ If an event is not yet supported, you can add an event rule to send messages.
 | project                        |           |
 | project_card                   |           |
 | project_column                 |           |
-| public                         |           |
+| public                         | x         |
 | pull_request                   | x         |
 | pull_request_review            |           |
 | pull_request_review_comment    | x         |
 | pull_request_review_thread     | x         |
 | push                           | x         |
 | release                        | x         |
-| repository                     |           |
-| repository_dispatch            |           |
-| repository_import              |           |
-| repository_vulnerability_alert |           |
-| secret_scanning_alert          |           |
-| security_advisory              |           |
-| sponsorship                    |           |
+| repository                     | x         |
+| repository_dispatch*           | -         |
+| repository_import              | x         |
+| repository_vulnerability_alert | x         |
+| secret_scanning_alert***       | -         |
+| security_advisory*             | -         |
+| sponsorship**                  | x         |
 | star                           | x         |
-| status                         |           |
-| team                           |           |
-| team_add                       |           |
-| watch                          |           |
-| workflow_dispatch              |           |
-| workflow_job                   |           |
-| workflow_run                   |           |
+| status                         | x         |
+| team                           | x         |
+| team_add                       | x         |
+| watch                          | x         |
+| workflow_dispatch*             | -         |
+| workflow_job                   | x         |
+| workflow_run*                  | -         |
+
+* These events are only sent to GitHub apps
+** Requires it's own webhook
+*** This event is missing GitHub documentation
 
 ## Discord events
 

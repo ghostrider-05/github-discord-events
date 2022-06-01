@@ -15,11 +15,11 @@ export class DiscordWebhookEmbed {
     public static embedColor = DiscordEmbedColors
 
     public static resolveEmbed(event: WebhookEvent, options: DefaultEmbedCreateOptions) {
-        const key = Object.keys(CombinedHandlerKeys).find(key => {
+        const key = (Object.keys(CombinedHandlerKeys).find(key => {
             const events = CombinedHandlerKeys[key as keyof typeof CombinedHandlerKeys]
 
             return events.includes(<never>options.name)
-        }) ?? Object.keys(handlers).find(key => key === options.name) as keyof typeof handlers | undefined
+        }) ?? Object.keys(handlers).find(key => key === options.name)) as keyof typeof handlers | undefined
 
         //@ts-ignore TODO: remove
         const embeds = key ? handlers[key](<never>event, <never>options) : undefined;
@@ -29,7 +29,7 @@ export class DiscordWebhookEmbed {
 
     /**
      * Get the url for a GitHub embed image preview
-     * @param path the relative path: https://github.com/{path}
+     * @param path the relative path: https://github.com/{path} \
      * Examples:
      * - issues: org/repo/issues/1
      * - repo: user/repo

@@ -1,6 +1,5 @@
 import {
-    APIEmbed,
-    embedData,
+    Embed,
     EmbedHandlers,
     EmbedTitle
 } from "../handler.js";
@@ -13,11 +12,10 @@ export const handler: EmbedHandlers['commit_comment'] = (event, options) => {
         on: `commit \`${commit_id}\``
     })
 
-    const embed: APIEmbed = {
-        ...embedData(body, sender),
-        title,
-        url: html_url
-    }
+    const { embed } = new Embed(sender)
+        .setDescription(body)
+        .setTitle(title)
+        .setUrl(html_url)
 
     return [embed]
 }

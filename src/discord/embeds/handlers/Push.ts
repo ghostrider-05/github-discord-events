@@ -1,37 +1,38 @@
-import { Commit, User } from "@octokit/webhooks-types";
+import type { Commit } from "@octokit/webhooks-types";
 import {
-    APIEmbed,
-    embedData,
     EmbedHandlers,
-    EmbedTitle,
-    DiscordEmbedColors
+    Embed
 } from "../handler.js";
 
-function formatCommit(commit: Commit, sender: User, url: string) {
-    const description = embedData(commit.message, sender, 47).description!
+const { formatters } = Embed.Title
 
-    //TODO: format commit url
-    return `[\`${commit.id}\`](${url}/commits/${commit.id.slice(0, 7)}) ${description} - ${commit.committer.name}`
+function formatCommit(commit: Commit, url: string) {
+    const description = formatters.substring(commit.message, 47)
+    const link = formatters.mdLink(
+        `\`${formatters.commitId(commit.id)}\``, 
+        formatters.commitUrl(url, commit.id)
+    )
+
+    return `${link} ${description} - ${commit.committer.name}`
 }
 
 export const handler: EmbedHandlers['push'] = (event, options) => {
     const { commits, sender, ref, repository, forced, after, compare, head_commit } = event
-    const refName = ref.slice(ref.lastIndexOf('/') + 1)
+    const refName = formatters.ref(ref)
 
     const title = forced
-        ? EmbedTitle.forcePush(refName, after)
-        : EmbedTitle.push(`${repository.name}:${refName}`, commits.length)
+        ? Embed.Title.forcePush(refName, after)
+        : Embed.Title.push(`${repository.name}:${refName}`, commits.length)
 
     const body = forced
-        ? `[Compare changes](${compare})`
-        : `${commits.map(commit => formatCommit(commit, sender, repository.html_url)).join('\n')}`
+        ? `[Compare changes](${compare})` //TODO: set to compare url
+        : `${commits.map(commit => formatCommit(commit, repository.html_url)).join('\n')}`
 
-    const embed: APIEmbed = {
-        ...embedData(body, sender),
-        color: DiscordEmbedColors.resolveColor(forced ? 'force' : '', options),
-        title,
-        url: `${repository.html_url}/commits/${after.slice(0, 7)}`
-    }
+    const { embed } = new Embed(sender)
+        .setColor(forced ? 'force' : '', options)
+        .setTitle(title)
+        .setDescription(body)
+        .setUrl(`${repository.html_url}/commits/${formatters.commitId(after)}`)
 
     return [embed]
 }

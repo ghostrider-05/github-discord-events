@@ -1,22 +1,17 @@
 import {
-    APIEmbed,
-    embedData,
-    EmbedHandlers,
-    stopFilter
+    Embed,
+    EmbedHandlers
 } from "../handler.js";
 
 export const handler: EmbedHandlers['release'] = (event, options) => {
     const { action, sender, release } = event
 
-    if (stopFilter({ action, ...options })) return
-
-    const prefix = (action === 'published' ? 'New ' : '') + (release.prerelease ? `pre` : '')
-
-    const embed: APIEmbed = {
-        ...embedData(undefined, sender),
-        title: `${prefix}release ${action}: ${release.name}`,
-        url: release.html_url
-    }
+    const { embed } = new Embed(sender)
+        .setUrl(release.html_url)
+        .setActionTitle(action, {
+            type: `${release.prerelease ? 'pre' : ''}release`,
+            newAction: 'published'
+        })
 
     return [embed]
 }

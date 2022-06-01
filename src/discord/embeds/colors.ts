@@ -1,5 +1,8 @@
-import { WebhookEventName } from "@octokit/webhooks-types";
-import { GitHubEventMap } from "../../github.js";
+import type { WebhookEventName } from "@octokit/webhooks-types";
+
+import { Formatters } from "../../data/format.js";
+
+import type { GitHubEventActions, GitHubEventMap } from "../../github.js";
 
 function hslToHex(h: number, s: number, l: number) {
     l /= 100;
@@ -16,6 +19,8 @@ function hslToHex(h: number, s: number, l: number) {
     return Number(`0x${f(0)}${f(8)}${f(4)}`)
 }
 
+const formatters = new Formatters()
+
 export type HSLColor = [number, number, number]
 
 type HSLColorValue<
@@ -28,6 +33,16 @@ type ColorKeys = {
 
 type ColorValue = Exclude<ColorKeys[keyof ColorKeys], 'resolveColor'>
 
+type _HSLColorValue<
+    T extends keyof typeof DiscordEmbedColors
+    > = (typeof DiscordEmbedColors[T]) extends HSLColor | undefined ? T : never
+
+type _ColorKeys = {
+    [x in keyof typeof DiscordEmbedColors]: _HSLColorValue<x>
+}
+
+type ColorValues = _ColorKeys[keyof _ColorKeys]
+
 class DiscordEmbedSaturationColors {
     public saturation: number;
     public action: string;
@@ -39,27 +54,51 @@ class DiscordEmbedSaturationColors {
         this.action = action
     }
 
-    // TODO: Use camelCase converter?
     public ColorActionMap: GitHubEventMap<ColorValue> = {
-        pull_request: 'pullRequestColor',
         issues: 'issueColor',
         issue_comment: 'issueColor',
-        push: 'pushColor',
-        discussion: 'discussionColor',
         discussion_comment: 'discussionColor',
     }
 
+    private getColorkey (name: WebhookEventName) {
+        const eventName = `${formatters.camelCase(name)}Color` as const
+        return this.ColorActionMap[name] 
+            ?? (eventName in DiscordEmbedColors 
+                ? eventName 
+                : undefined
+            ) as ColorValue | undefined
+    }
+
     public saturationColorKey(key: ColorValue, name: WebhookEventName) {
-        const color = DiscordEmbedColors[key](this.action, name)
+        const color = DiscordEmbedColors[key](<never>this.action, name)
 
         return DiscordEmbedColors.applySaturation(color, this.saturation)
     }
 
+    public saturationColorValue (value: ColorValues) {
+        return DiscordEmbedColors.applySaturation(DiscordEmbedColors[value], this.saturation)
+    }
+
     public resolveKey(name: WebhookEventName) {
-        const key = this.ColorActionMap[name]
+        const key = this.getColorkey(name)
 
         if (key) {
             return this.saturationColorKey(key, name)
+        } else {
+            switch (this.action) {
+                case 'created':
+                case 'create':
+                case 'completed':
+                case 'success':
+                    return this.saturationColorValue('green')
+                case 'deleted':
+                case 'cancelled':
+                case 'failure':
+                case 'error':
+                    return this.saturationColorValue('red')
+                case 'pending':
+                    return this.saturationColorValue('issueCreated')
+            }
         }
     }
 
@@ -85,22 +124,34 @@ export class DiscordEmbedColors {
         return DiscordEmbedColors.toHex([h, s * saturation, l])
     }
 
-    static issueColor(action: string) {
+    static issueColor(action: GitHubEventActions<'issues' | 'issue_comment'>) {
         const { issueCreated, issueComment } = DiscordEmbedColors
 
         if (action === 'opened') return issueCreated
         else if (action === 'created') return issueComment
     }
 
-    static discussionColor(action: string) {
+    static discussionColor(action: GitHubEventActions<'discussion' | 'discussion_comment'>) {
         if (action === 'answered') return DiscordEmbedColors.green
         else if (action === 'created') return DiscordEmbedColors.issueComment
     }
 
-    static pullRequestColor(action: string, name: WebhookEventName) {
+    static pullRequestColor(
+        action: GitHubEventActions<
+            | 'pull_request'
+            | 'pull_request_review'
+            | 'pull_request_review_comment'
+            | 'pull_request_review_thread'
+        >, 
+        name: WebhookEventName
+    ) {
         if (action === 'opened' && name === 'pull_request') return DiscordEmbedColors.green
         else if (name === 'pull_request_review_comment') return DiscordEmbedColors.fringyFlower
         // TODO: add pull_request_review:submit colors
+    }
+
+    static publicColor (action: string) {
+        return DiscordEmbedColors.green
     }
 
     /**
@@ -112,8 +163,9 @@ export class DiscordEmbedColors {
         else return DiscordEmbedColors.blurple
     }
 
-    public static resolveColor(action: string, options: { saturation: number, name: string }): number | undefined {
+    public static resolveColor(action: string | null, options: { saturation: number, name: string }): number | undefined {
         const { name, saturation } = options
+        if (!action) return undefined
 
         const colors = new DiscordEmbedSaturationColors({
             action,
