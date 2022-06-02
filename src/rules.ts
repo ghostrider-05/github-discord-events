@@ -101,6 +101,12 @@ export interface GitHubEventRule<T extends WebhookEventName = WebhookEventName> 
     //waitInterval?: number
 
     /**
+     * Whether events with this name can fallback on the main rule.
+     * @default true
+     */
+    main?: boolean
+
+    /**
      * Whether to skip this rule and continue with other event rules / the main rule.
      */
     pass?: boolean | ((event: GitHubEventPayload<T>) => boolean)
@@ -169,7 +175,7 @@ export interface GitHubEventRule<T extends WebhookEventName = WebhookEventName> 
 
 export interface GitHubEventRulesConfig extends Omit<GitHubEventRule & {
     webhook: WebhookClientData
-}, 'name' | GitHubCustomEventRuleFilters> {
+}, 'name' | 'main' | GitHubCustomEventRuleFilters> {
     // GitHub
 
     /**

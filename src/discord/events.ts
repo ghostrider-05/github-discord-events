@@ -31,6 +31,7 @@ export const emittedEvents: EmittedEvents = {
 /**
  * Check if the event should be sent by default
  * @param event 
+ * @returns Whether the event should be blocked
  */
 export function stopFilter(event: { name: keyof EmittedEvents, action: string, filterEvents: boolean }) {
     if (!event.filterEvents) return false

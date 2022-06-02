@@ -1,6 +1,6 @@
 import type { WebhookEvent, WebhookEventName, Label, Milestone } from "@octokit/webhooks-types";
 
-import { emittedEvents } from "./discord/events.js";
+import { emittedEvents, stopFilter } from "./discord/events.js";
 
 import type { GitHubLabelData, GitHubMileStoneData } from "./github.js";
 import type {
@@ -180,12 +180,23 @@ function checkEventRules(options: GitHubRulesData) {
 }
 
 export function checkGitHubRules(options: GitHubRulesData) {
-    const { rules } = options
+    const { rules, filterEvents, name } = options
+
+    if (stopFilter({ 
+        filterEvents,
+        action: (options.event as { action: string })['action'],
+        name
+    })) return undefined
 
     if (rules.events && rules.events.length > 0) {
         const eventRule = checkEventRules(options)
 
         if (eventRule) return eventRule
+
+        const stopMainRule = rules.events.some(event => {
+            return event.main === false && event.name === name
+        })
+        if (stopMainRule) return undefined
     }
 
     const ok = checkGitHubRule({
