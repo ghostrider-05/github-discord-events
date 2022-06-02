@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "docs:dev": "vuepress dev docs",
-    "docs:build": "vuepress build docs",
+    "docs:build": "node ./scripts/esm.js && vuepress build docs",
     "prestart": "tsc",
     "start": "node ."
   },
