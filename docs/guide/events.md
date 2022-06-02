@@ -64,9 +64,9 @@ If an event is not yet supported, you can add an event rule to send messages.
 | workflow_job                   | x         |
 | workflow_run*                  | -         |
 
-* These events are only sent to GitHub apps
-** Requires it's own webhook
-*** This event is missing GitHub documentation
+\* These events are only sent to GitHub apps \
+\*\* Requires it's own webhook \
+\*\*\* This event is missing GitHub documentation
 
 ## Discord events
 

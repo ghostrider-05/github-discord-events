@@ -72,7 +72,7 @@ export class GitHubEventManager {
 
         this.createResponse = GitHubResponse.createManager({
             'invalid': (data, rule) => [{
-                statusText: 'Received invalid github webhook event',
+                statusText: 'Received invalid GitHub webhook event',
                 status: 500,
                 completed: false,
                 event: undefined
@@ -85,7 +85,7 @@ export class GitHubEventManager {
                 event: undefined
             }],
             'unverified': (data, rule) => [{
-                statusText: 'Received unverified github webhook event',
+                statusText: 'Received unverified GitHub webhook event',
                 status: 500,
                 completed: false,
                 event: undefined,
@@ -113,8 +113,8 @@ export class GitHubEventManager {
      * Handle an incoming request (via https, proxy, etc.) and perform actions based on the rules.
      * Use lifecycle hooks to add custom actions.
      * @param request The incoming request from your server
-     * @returns The response whether the request was handled succesfully.
-     * The response will contain the appropiate status and status text with a human readable summary / error.
+     * @returns The response whether the request was handled successfully.
+     * The response will contain the appropriate status and status text with a human readable summary / error.
      * The response body will contain a JSON object ({@link EventResponseBody}) with a more detailed response.
      */
     public async handleEvent (request: Request) {

@@ -13,7 +13,7 @@ export interface GitHubEventManagerOptions {
      */
     rules: GitHubEventRulesConfig
     /**
-     * The Discord api version to use for webhook requests.
+     * The Discord API version to use for webhook requests.
      * @default 9
      */
     apiVersion?: number
@@ -29,7 +29,7 @@ export interface GitHubEventManagerOptions {
      */
     filter?: GitHubEventFilter
     /**
-     * For the `onBeforeActivated` hook, determine how often the Discord api 
+     * For the `onBeforeActivated` hook, determine how often the Discord API 
      * will be used to fetch information about the webhook.
      * Options:
      * - all: fetch after every passed rule
@@ -68,7 +68,7 @@ export interface EventResponseBody {
      */
     completed: boolean
     /**
-     * The data assiocated with the event
+     * The data associated with the event
      */
     data?: EventResponseMetadata
     /**

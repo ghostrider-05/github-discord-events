@@ -41,7 +41,7 @@ export interface GitHubEventRule<T extends WebhookEventName = WebhookEventName> 
     // GitHub
 
     /**
-     * Only pass when a speficied action is executed.
+     * Only pass when a specified action is executed.
      */
     actions?: GitHubEventActions<T>[]
 
@@ -101,7 +101,7 @@ export interface GitHubEventRule<T extends WebhookEventName = WebhookEventName> 
     //waitInterval?: number
 
     /**
-     * Whether events with this name can fallback on the main rule.
+     * Whether events with this name can fall back on the main rule.
      * @default true
      */
     main?: boolean
@@ -181,7 +181,7 @@ export interface GitHubEventRulesConfig extends Omit<GitHubEventRule & {
     /**
      * Filter incoming webhooks by their event name.
      * Each event can have their own specified filters.
-     * If no filters are set on the event, the global filters will be used as a fallback.
+     * If no filters are set on the event, the global filters will be used as a fall back.
      */
     events?: GitHubEventRule[]
 
@@ -189,7 +189,7 @@ export interface GitHubEventRulesConfig extends Omit<GitHubEventRule & {
     /**
      * Called when a rule is triggered and before the webhook message is sent to Discord.
      * @param event The incoming event payload
-     * @param webhook If fetched succesfully, the webhook structure
+     * @param webhook If fetched successfully, the webhook structure
      * @param rule The passed rule, not present when the rule is not an event rule
      */
     onBeforeActivated?: (payload: DiscordWebhookMessage, webhook?: RESTGetAPIWebhookWithTokenResult, rule?: GitHubEventRule) => Promise<void> | void

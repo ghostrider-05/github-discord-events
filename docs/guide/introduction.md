@@ -1,6 +1,6 @@
-# Github -> Discord webhook
+# Introduction
 
-Package to customize your GitHub webhook messages to Discord.
+This package is an easy, but highly configurable, way to customize your GitHub webhook messages to Discord.
 
 ## Why?
 
@@ -19,16 +19,3 @@ Why not another package?
 - hosted solution or handle requests self hosted (without a token)
 - typed webhook payloads for every incoming event
 - improves deliveries messages on GitHub
-
-## How to use
-
-1. Create a new webhook (with an application) on Discord and keep the url / token + id
-1. Go to your repository or user / organization settings on GitHub and create a new webhook with the events you want to send. The url is the url of the server you are running the application on.
-1. Deploy the code with your rules on the server*.
-
-\* Can either be on the [website]() or self hosted on a VPS server (node v18 or higher) or serverless platform like Cloudflare Workers.
-
-## Documentation & Examples
-
-- [Documentation](./docs/)
-- [Examples](./docs/examples/)

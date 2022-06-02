@@ -1,4 +1,7 @@
 node_modules
+.temp
+.env
+.cache
 
 dist
 .vscode
