@@ -26,6 +26,20 @@ import type { GitHubEventRulesConfig, GitHubEventRule } from "../rules.js"
     }
 
     /**
+     * Create new event rules with the same rule data.\
+     * Intended to use for defining multiple events with the same handlers
+     * @param names The event names
+     * @param rule The rule data
+     */
+    public static combineEvents <T extends WebhookEventName>(names: T[], rule: Omit<GitHubEventRule<T>, 'name'>): GitHubEventRule[] {
+        return names.map(name => {
+            const event = Object.defineProperty(rule, 'name', name) as GitHubEventRule<T>
+
+            return RuleBuilder.event<T>(event)
+        })
+    }
+
+    /**
      * Set a filter on the main rule
      * @param key The name of filter
      * @param value The new value of the filter
@@ -46,6 +60,16 @@ import type { GitHubEventRulesConfig, GitHubEventRule } from "../rules.js"
         this.rules.events ??= []
 
         this.rules.events.push(<never>event)
+
+        return this
+    }
+
+    /**
+     * Add multiple event rules for filtering events on their name
+     * @param events The event rules
+     */
+    public addEvents<T extends WebhookEventName>(events: GitHubEventRule<T>[]): this {
+        events.forEach(event => this.addEvent(<never>event))
 
         return this
     }
