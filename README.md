@@ -26,9 +26,9 @@ Why not another package?
 1. Go to your repository or user / organization settings on GitHub and create a new webhook with the events you want to send. The url is the url of the server you are running the application on.
 1. Deploy the code with your rules on the server*.
 
-\* Can either be on the [website]() or self hosted on a VPS server (node v18 or higher) or serverless platform like Cloudflare Workers.
+\* Can either be on the [website](https://ghostrider-05.github.io/github-discord-events/) or self hosted on a VPS server (node v18 or higher) or serverless platform like Cloudflare Workers.
 
 ## Documentation & Examples
 
-- [Documentation](./docs/)
-- [Examples](./docs/examples/)
+- [Documentation](https://ghostrider-05.github.io/github-discord-events/)
+- [Examples](https://ghostrider-05.github.io/github-discord-events/examples/)
