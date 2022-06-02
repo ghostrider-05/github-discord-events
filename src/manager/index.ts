@@ -1,20 +1,21 @@
-import type { WebhookEventName, WebhookEvent } from "@octokit/webhooks-types"
-
-import { defaultWebhookUser } from "../data/Constants.js"
 import { Resolvers } from "../data/resolve.js"
+import { defaultWebhookUser } from "../data/Constants.js"
 import { DiscordWebhookEmbed } from "../discord/embed.js"
 import { DiscordWebhookUser, WebhookStorage, WebhookManager } from "../discord/webhook.js"
-import { checkGitHubRules } from "../filter.js"
 
+import { checkGitHubRules } from "../filter.js"
 import { RuleBuilder } from "./builder.js"
+import { GitHubResponse, RequestGitHubData, ResponseCreateManager } from "./response.js"
 
 import type { 
     GitHubEventFilter, 
     GitHubEventManagerOptions, 
-    EventResponseBody, 
-    EventResponseMetadata 
 } from "./options.js"
 import type { GitHubEventRulesConfig } from "../rules.js"
+
+export type {
+    RequestGitHubData,
+}
 
 export class GitHubEventManager {
     /**
@@ -42,6 +43,7 @@ export class GitHubEventManager {
      * See the example with the 'crypto' module
      * @param request The incoming 
      * @param key The signature key with the request
+     * @default (request, key) => true
      * @example
      * ```js
      * manager.validateEvent: (request, key) => {
@@ -57,6 +59,8 @@ export class GitHubEventManager {
      */
     public validateEvent?: (request: Request, key: string | null) => boolean = undefined
 
+    private createResponse: ResponseCreateManager<'invalid' | 'unknown' | 'unverified' | 'complete'>
+
     constructor (options: GitHubEventManagerOptions) {
         this.rules = options.rules instanceof RuleBuilder ? options.rules.toJSON() : options.rules
         this.webhookUser = options.user ?? defaultWebhookUser
@@ -65,39 +69,44 @@ export class GitHubEventManager {
         this.apiVersion = options.apiVersion ?? 9
 
         WebhookStorage.setAction(options.fetchWebhook)
-    }
 
-    private getResponse (options: { status: number, statusText: string } & EventResponseBody) {
-        const { status, statusText, ...body } = options
-
-        return new Response(JSON.stringify(body), {
-            status,
-            statusText,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
+        this.createResponse = GitHubResponse.createManager({
+            'invalid': (data, rule) => [{
+                statusText: 'Received invalid github webhook event',
+                status: 500,
+                completed: false,
+                event: undefined
+            }],
+            'unknown': (data, rule) => [{
+                status: 404,
+                statusText: 'Received GitHub event, but no rules matched',
+                data,
+                completed: false,
+                event: undefined
+            }],
+            'unverified': (data, rule) => [{
+                statusText: 'Received unverified github webhook event',
+                status: 500,
+                completed: false,
+                event: undefined,
+                data
+            }],
+            'complete': (data, rule, complete) => [{
+                statusText: 'Completed GitHub event',
+                completed: complete ?? true,
+                data,
+                rule,
+                event: undefined
+            }]
+        }, options.response?.includePayload ?? true)
     }
 
     /**
      * Get the webhook data from an incoming webhook request
      * @param request The incoming request
      */
-    public async getRequestMetadata (request: Request): Promise<EventResponseMetadata | undefined> {
-        const name = request.headers.get('X-GitHub-Event') as WebhookEventName
-        const guid = request.headers.get('X-GitHub-Delivery')!
-        const signature = request.headers.get('X-Hub-Signature-256')
-        const event = await request.json() as WebhookEvent
-
-        if (!name || !event) return undefined
-
-        return {
-            name,
-            guid,
-            payload: event,
-            action: 'action' in event ? event.action : undefined,
-            signature
-        }
+    public async getRequestMetadata (request: Request): Promise<RequestGitHubData> {
+        return GitHubResponse.getRequestData(request)
     }
 
     /**
@@ -110,22 +119,10 @@ export class GitHubEventManager {
      */
     public async handleEvent (request: Request) {
         const data = await this.getRequestMetadata(request)
-        // const data = await this._validateEvent(request)
-        if (!data) return this.getResponse({
-            statusText: 'Received invalid github webhook event',
-            status: 500,
-            completed: false,
-            event: undefined
-        })
+        if (!data) return this.createResponse('invalid')
 
         const verified = this.validateEvent?.(request, data.signature) ?? true
-        if (!verified) return this.getResponse({
-            statusText: 'Received unverified github webhook event',
-            status: 500,
-            completed: false,
-            event: data.payload,
-            metaData: data
-        })
+        if (!verified) return this.createResponse('unverified', data)
 
         const { payload: event, name } = data
         const rule = checkGitHubRules({
@@ -162,24 +159,10 @@ export class GitHubEventManager {
                 wait: rule.wait
             }).then(res => res.ok)
 
-            return this.getResponse({
-                status: completed ? 200 : 500,
-                statusText: 'Completed GitHub event',
-                completed: true,
-                metaData: data,
-                event,
-                eventName: name,
-                action: 'action' in event ? event.action : undefined
-            })
-
-        } else return this.getResponse({
-            status: 404,
-            statusText: 'Received GitHub event, but no rules matched',
-            event,
-            metaData: data,
-            eventName: name,
-            completed: false
-        })
+            return this.createResponse('complete', data, <never>rule, completed)
+        } else {
+            return this.createResponse('unknown', data)
+        }
     }
 }
 

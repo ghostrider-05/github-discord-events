@@ -38,6 +38,16 @@ export interface GitHubEventManagerOptions {
      * @default 'never'
      */
     fetchWebhook?: 'all' | 'stored' | 'never'
+    /**
+     * Options for the response of the event handler
+     */
+    response?: {
+        /**
+         * Include the payload in the response body
+         * @default true
+         */
+        includePayload?: boolean
+    }
 
     // Improves relative links like #42
     // Check autolinks
@@ -48,18 +58,34 @@ export interface EventResponseMetadata {
     name: WebhookEventName
     action: string | undefined
     guid: string
-    payload: WebhookEvent
+    payload: WebhookEvent | undefined
     signature: string | null
 }
 
 export interface EventResponseBody {
+    /**
+     * Whether the event is completed
+     */
     completed: boolean
+    /**
+     * The data assiocated with the event
+     */
+    data?: EventResponseMetadata
+    /**
+     * If failed, a human readable error message
+     */
+    message?: string
+    /**
+     * If completed and the event is passed by an event rule, the event rule that passed the event.
+     */
+    rule?: GitHubEventRule
+
     /**@deprecated */
     event: WebhookEvent | undefined
     /**@deprecated */
     action?: string
-    rule?: GitHubEventRule
     /**@deprecated */
     eventName?: string
+    /**@deprecated */
     metaData?: EventResponseMetadata
 }
