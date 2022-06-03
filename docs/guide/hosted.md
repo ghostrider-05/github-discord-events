@@ -13,7 +13,7 @@ You can manage your webhooks on [the website]() by filling in the form.
 
 #### Base URL
 
-```txt
+```txt:no-line-numbers
 https://github-rules.ghostrider.workers.dev/api/v{api_version}
 ```
 
@@ -52,3 +52,15 @@ Query Params
 ## Self hosted
 
 // Add guide
+
+### Serverless
+
+:::tip Platforms
+This guide is suitable for most platforms, including:
+
+- CF workers
+- Vercel
+
+:::
+
+### Node.js

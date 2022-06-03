@@ -31,4 +31,4 @@ Why not another package?
 ## Documentation & Examples
 
 - [Documentation](https://ghostrider-05.github.io/github-discord-events/)
-- [Examples](https://ghostrider-05.github.io/github-discord-events/examples/)
+- [Examples](https://ghostrider-05.github.io/github-discord-events/examples/stars)
