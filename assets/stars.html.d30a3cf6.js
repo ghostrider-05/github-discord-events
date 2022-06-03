@@ -1,0 +1,1 @@
+const t={key:"v-1b92bf05",path:"/examples/stars.html",title:"Star counting",lang:"en-US",frontmatter:{},excerpt:"",headers:[],git:{updatedTime:1654270001e3,contributors:[{name:"ghostrider-05",email:"lucas.duijn@hotmail.nl",commits:1}]},filePathRelative:"examples/stars.md"};export{t as data};

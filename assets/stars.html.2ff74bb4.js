@@ -1,0 +1,32 @@
+import{_ as n,o as s,c as a,e as t}from"./app.af27f823.js";const e={},p=t(`<h1 id="star-counting" tabindex="-1"><a class="header-anchor" href="#star-counting" aria-hidden="true">#</a> Star counting</h1><div class="language-javascript ext-js line-numbers-mode"><pre class="language-javascript"><code><span class="token keyword">import</span> <span class="token punctuation">{</span> 
+    GitHubEventManager<span class="token punctuation">,</span> 
+    DiscordWebhookEmbed<span class="token punctuation">,</span> 
+    RuleBuilder 
+<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">&#39;github-discord-events&#39;</span>
+
+<span class="token keyword">const</span> rules <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">RuleBuilder</span><span class="token punctuation">(</span><span class="token punctuation">{</span> <span class="token literal-property property">url</span><span class="token operator">:</span> <span class="token string">&#39;webhook_url&#39;</span> <span class="token punctuation">}</span><span class="token punctuation">)</span>
+    <span class="token punctuation">.</span><span class="token function">addEvent</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+        <span class="token literal-property property">name</span><span class="token operator">:</span> <span class="token string">&#39;star&#39;</span><span class="token punctuation">,</span>
+        <span class="token literal-property property">actions</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">&#39;created&#39;</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token literal-property property">threadId</span><span class="token operator">:</span> <span class="token string">&#39;0123&#39;</span><span class="token punctuation">,</span> <span class="token comment">// A star counting thread</span>
+        <span class="token function-variable function">transformMessage</span><span class="token operator">:</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">{</span> repository <span class="token punctuation">}</span></span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+            <span class="token keyword">const</span> stars <span class="token operator">=</span> repository<span class="token punctuation">.</span>stargazers_count
+
+            <span class="token keyword">const</span> content <span class="token operator">=</span> stars <span class="token operator">%</span> <span class="token number">1000</span> <span class="token operator">===</span> <span class="token number">0</span>
+                <span class="token operator">?</span> <span class="token template-string"><span class="token template-punctuation string">\`</span><span class="token string">@here We reached </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">\${</span>stars<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> stars!</span><span class="token template-punctuation string">\`</span></span>
+                <span class="token operator">:</span> <span class="token template-string"><span class="token template-punctuation string">\`</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">\${</span>stars<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> stars</span><span class="token template-punctuation string">\`</span></span>
+
+            <span class="token keyword">return</span> <span class="token punctuation">{</span>
+                content
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+<span class="token keyword">const</span> manager <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">GitHubEventManager</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+    rules
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+<span class="token function">addEventListener</span><span class="token punctuation">(</span><span class="token string">&#39;fetch&#39;</span><span class="token punctuation">,</span> <span class="token parameter">event</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    event<span class="token punctuation">.</span><span class="token function">respondWith</span><span class="token punctuation">(</span>manager<span class="token punctuation">.</span><span class="token function">handleEvent</span><span class="token punctuation">(</span>event<span class="token punctuation">.</span>request<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div>`,2),o=[p];function c(i,l){return s(),a("div",null,o)}var u=n(e,[["render",c],["__file","stars.html.vue"]]);export{u as default};
