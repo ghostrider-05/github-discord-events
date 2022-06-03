@@ -86,9 +86,15 @@ export interface GitHubEventRule<T extends WebhookEventName = WebhookEventName> 
     saturation?: number
 
     /**
-     * If provided, post the event to the thread with this id if 
+     * If provided, post the event to the thread with this id if this thread exists in the current channel.
      */
     threadId?: Snowflake
+
+    /**
+     * Create a new thread with this name. \
+     * Only available when the channel is a forum channel
+     */
+    threadName?: string
 
     /**
      * waits for server confirmation of message send before response
@@ -99,6 +105,11 @@ export interface GitHubEventRule<T extends WebhookEventName = WebhookEventName> 
 
     // TODO: what happens to a filter for a label when a ci assigns a label after creating?
     //waitInterval?: number
+
+    /**
+     * Whether the final Discord message has files attached
+     */
+    hasFilesAttached?: boolean
 
     /**
      * Whether events with this name can fall back on the main rule.
@@ -173,6 +184,16 @@ export interface GitHubEventRule<T extends WebhookEventName = WebhookEventName> 
     // onTransform?: (type: 'message' | 'embed', output: DiscordWebhookMessage | APIEmbed[]) => void
 }
 
+export interface GitHubDiscordFinalUploadData {
+    message: DiscordWebhookMessage, 
+    webhook?: RESTGetAPIWebhookWithTokenResult
+}
+
+export interface GitHubEventFinalUploadData {
+    payload: WebhookEvent
+    rule?: GitHubEventRule | GitHubEventRulesConfig
+}
+
 export interface GitHubEventRulesConfig extends Omit<GitHubEventRule & {
     webhook: WebhookClientData
 }, 'name' | 'main' | GitHubCustomEventRuleFilters> {
@@ -185,12 +206,19 @@ export interface GitHubEventRulesConfig extends Omit<GitHubEventRule & {
      */
     events?: GitHubEventRule[]
 
-    // TODO: what to do with form uploads?
+    // TODO: handles it sort of, but not ideal
+    /**
+     * If an event has {@link GitHubEventRule.hasFilesAttached}, 
+     * the event will not be sent by Discord but to this handler.
+     * @see https://discord.com/developers/docs/reference#uploading-files
+     */
+    handleFileUploads?: (discord: GitHubDiscordFinalUploadData, event: GitHubEventFinalUploadData) => Promise<boolean>
+
     /**
      * Called when a rule is triggered and before the webhook message is sent to Discord.
      * @param event The incoming event payload
      * @param webhook If fetched successfully, the webhook structure
      * @param rule The passed rule, not present when the rule is not an event rule
      */
-    onBeforeActivated?: (payload: DiscordWebhookMessage, webhook?: RESTGetAPIWebhookWithTokenResult, rule?: GitHubEventRule) => Promise<void> | void
+    onBeforeActivated?: (discord: GitHubDiscordFinalUploadData, event: GitHubEventFinalUploadData) => Promise<void> | void
 }

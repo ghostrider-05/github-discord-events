@@ -3,6 +3,8 @@ name: docs
 on:
   push:
     branches: [master]
+    paths:
+      - 'docs/**'
   workflow_dispatch:
 
 jobs:
@@ -32,20 +34,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # run build script
       - name: Build VuePress site
         run: npm run docs:build
 
-      # please check out the docs of the workflow for more details
-      # @see https://github.com/crazy-max/ghaction-github-pages
       - name: Deploy to GitHub Pages
         uses: crazy-max/ghaction-github-pages@v2
         with:
-          # deploy to gh-pages branch
           target_branch: gh-pages
-          # deploy the default output dir of VuePress
           build_dir: docs/.vuepress/dist
           jekyll: false
         env:
-          # @see https://docs.github.com/en/actions/reference/authentication-in-a-workflow#about-the-github_token-secret
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

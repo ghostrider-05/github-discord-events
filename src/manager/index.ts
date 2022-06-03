@@ -11,7 +11,11 @@ import type {
     GitHubEventFilter, 
     GitHubEventManagerOptions, 
 } from "./options.js"
-import type { GitHubEventRulesConfig } from "../rules.js"
+import type { 
+    GitHubDiscordFinalUploadData, 
+    GitHubEventFinalUploadData,
+    GitHubEventRulesConfig 
+} from "../rules.js"
 
 export type {
     RequestGitHubData,
@@ -149,13 +153,30 @@ export class GitHubEventManager {
                 ...webhook
             })
 
+            const webhookData = await webhookManager.get()
+            const uploadData: [GitHubDiscordFinalUploadData, GitHubEventFinalUploadData] = [
+                {  
+                    webhook: webhookData,
+                    message, 
+                },
+                {
+                    rule,
+                    payload: event,
+                }
+            ]
+
             if (this.rules.onBeforeActivated != undefined) {
-                const webhookData = await webhookManager.get()
-                await this.rules.onBeforeActivated(message, webhookData, 'name' in rule ? rule : undefined)
+                await this.rules.onBeforeActivated(...uploadData)
+            }
+
+            if (rule.hasFilesAttached) {
+                const completedFiles = await this.rules.handleFileUploads?.(...uploadData)
+                return this.createResponse('complete', data, <never>rule, completedFiles)
             }
 
             const completed = await webhookManager.post(messageData, {
                 thread_id: rule.threadId,
+                thread_name: rule.threadName,
                 wait: rule.wait
             }).then(res => res.ok)
 

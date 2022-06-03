@@ -8,7 +8,7 @@ import type {
     DiscordWebhookMessage,
 } from './discord/webhook.js'
 
-import type { GitHubEventRule, GitHubEventRulesConfig } from './rules.js'
+import type { GitHubEventRule } from './rules.js'
 import type * as EmbedTypes from './discord/embeds/handler.js'
 
 /**
@@ -23,6 +23,7 @@ function createEventRule<T extends WebhookEventName>(event: GitHubEventRule<T>):
 export * from './manager/index.js'
 export * from './discord/events.js'
 export * from './github.js'
+export * from './rules.js'
 
 export {
     createEventRule,
@@ -34,6 +35,4 @@ export type {
     DiscordWebhookUser,
     DiscordWebhookMessage,
     EmbedTypes,
-    GitHubEventRulesConfig,
-    GitHubEventRule
 }

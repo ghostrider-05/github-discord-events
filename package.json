@@ -3,6 +3,14 @@
   "version": "0.3.0",
   "description": "Package to customize your GitHub webhook messages to Discord",
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "homepage": "https://ghostrider-05.github.io/github-discord-events/",
+  "repository": {
+    "url": "github:ghostrider-05/github-discord-events"
+  },
+  "bugs": {
+    "url": "https://github.com/ghostrider-05/github-discord-events/issues"
+  },
   "type": "module",
   "scripts": {
     "docs:dev": "vuepress dev docs",

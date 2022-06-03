@@ -126,7 +126,7 @@ export class WebhookManager {
 
     public async post(
         body: RESTPostAPIWebhookWithTokenJSONBody,
-        options: RESTPostAPIWebhookWithTokenQuery
+        options: RESTPostAPIWebhookWithTokenQuery & { thread_name?: string } // TODO: remove when -types releases
     ) {
         const url = this.url(options)
         if (!body.content && !body.embeds) {
