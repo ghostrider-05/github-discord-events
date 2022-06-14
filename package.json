@@ -15,6 +15,7 @@
   "scripts": {
     "docs:dev": "vuepress dev docs",
     "docs:build": "node ./scripts/esm.js && vuepress build docs",
+    "scripts:handler": "node ./scripts/handler.js",
     "prestart": "tsc",
     "start": "node ."
   },

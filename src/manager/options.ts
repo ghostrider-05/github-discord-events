@@ -79,13 +79,4 @@ export interface EventResponseBody {
      * If completed and the event is passed by an event rule, the event rule that passed the event.
      */
     rule?: GitHubEventRule
-
-    /**@deprecated */
-    event: WebhookEvent | undefined
-    /**@deprecated */
-    action?: string
-    /**@deprecated */
-    eventName?: string
-    /**@deprecated */
-    metaData?: EventResponseMetadata
 }

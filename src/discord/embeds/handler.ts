@@ -18,44 +18,6 @@ export interface BaseEmbedCreateOptions<T extends WebhookEventName> {
 
 export type DefaultEmbedCreateOptions = BaseEmbedCreateOptions<WebhookEventName>
 
-// Event embed options
-
-/**@deprecated */
-export type IssuesEmbedCreateOptions = BaseEmbedCreateOptions<'issues' | 'issue_comment'>
-
-/**@deprecated */
-export type PullRequestEmbedCreateOptions = BaseEmbedCreateOptions<
-    | 'pull_request'
-    | 'pull_request_review'
-    | 'pull_request_review_comment'
-    | 'pull_request_review_thread'
->
-
-/**@deprecated */
-export type PushEmbedCreateOptions = BaseEmbedCreateOptions<'push'>
-/**@deprecated */
-export type PushCommentEmbedCreateOptions = BaseEmbedCreateOptions<'commit_comment'>
-
-/**@deprecated */
-export type PingEmbedCreateOptions = BaseEmbedCreateOptions<'ping'>
-
-/**@deprecated */
-export type BranchEmbedCreateOptions = BaseEmbedCreateOptions<'create' | 'delete'>
-
-/**@deprecated */
-export type DiscussionEmbedCreateOptions = BaseEmbedCreateOptions<'discussion'>
-/**@deprecated */
-export type DiscussionCommentEmbedCreateOptions = BaseEmbedCreateOptions<'discussion_comment'>
-
-/**@deprecated */
-export type ForkEmbedCreateOptions = BaseEmbedCreateOptions<'fork'>
-
-/**@deprecated */
-export type ReleaseEmbedCreateOptions = BaseEmbedCreateOptions<'release'>
-
-/**@deprecated */
-export type StarEmbedCreateOptions = BaseEmbedCreateOptions<'star'>
-
 // Handler
 
 export type EmbedHandler<
@@ -98,6 +60,7 @@ export const SupportedHandlerKeyNames = [
     'gollum',
     'issues',
     'ping',
+    'project',
     'pull_request',
     'public',
     'push',
@@ -111,9 +74,6 @@ export const SupportedHandlerKeyNames = [
     'workflow_job',
 ] as const
 
-/** @deprecated */
-export type SupportEmbedHandlerKeys = typeof SupportedHandlerKeyNames[number]
-
 export type SupportedEmbedHandlerKeys = typeof SupportedHandlerKeyNames[number]
 
 type TypedCombinedHandlerKeys = {
@@ -124,47 +84,14 @@ type EmbedHandlerEventNames<T extends string> = T extends keyof TypedCombinedHan
 
 export type SupportedEventNames = EmbedHandlerEventNames<SupportedEmbedHandlerKeys>
 
-const t: SupportedEventNames = 'code_scanning_alert'
 export type EmbedHandlers = {
     [K in SupportedEmbedHandlerKeys]: EmbedHandlerEvent<EmbedHandlerEventNames<K>>
-} & {
-    /** @deprecated */
-    pushComment: EmbedHandlerEvent<'commit_comment'>
-    /** @deprecated */
-    discussionComment: EmbedHandlerEvent<'discussion_comment'>
-    /** @deprecated */
-    pullRequest: EmbedHandlerEvent<
-        | 'pull_request'
-        | 'pull_request_review'
-        | 'pull_request_review_comment'
-        | 'pull_request_review_thread'
-    >
 }
 
 // Embed
 
 export const EmbedTitle = new class EmbedTitle {
     public formatters = formatters
-
-    /** @deprecated */
-    public format(input: string) {
-        return this.formatters.capitalize(input)
-    }
-
-    /** @deprecated */
-    public formatAction(action: string) {
-        return this.formatters.action(action)
-    }
-
-    /** @deprecated */
-    public formatCommitId(id: string) {
-        return this.formatters.commitId(id)
-    }
-
-    /** @deprecated */
-    public formatRef(ref: string) {
-        return this.formatters.ref(ref)
-    }
 
     public fork(repository: string, fork: string) {
         return `[${repository}] Fork created: ${fork}`
@@ -211,7 +138,7 @@ export const EmbedTitle = new class EmbedTitle {
     }
 
     public comment(repository: string, comment: { action: string, type?: string, on: string }) {
-        const action = this.format(comment.action === 'created' ? 'new' : comment.action)
+        const action = this.formatters.action(comment.action === 'created' ? 'new' : comment.action)
         return `[${repository}] ${action} ${comment.type ?? ''} comment on ${comment.on}`
     }
 }
