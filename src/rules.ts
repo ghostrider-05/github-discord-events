@@ -1,5 +1,5 @@
 import type { EventPayloadMap, WebhookEventName, WebhookEvent } from "@octokit/webhooks-types"
-import type { APIEmbed, Snowflake, RESTGetAPIWebhookWithTokenResult } from "discord-api-types/v9"
+import type { APIEmbed, Snowflake, RESTGetAPIWebhookWithTokenResult } from "discord-api-types/v10"
 import type { WebhookClientData } from "discord.js"
 
 import type { DiscordWebhookMessage } from "./discord/webhook.js"
@@ -31,6 +31,10 @@ export type GitHubEventPayloadFilters =
 export type GitHubCustomEventRuleFilters =
     | 'pass'
     | 'skip'
+
+export type GitHubEventFilterValueOrCallback<S, W extends WebhookEventName> = 
+    | S 
+    | ((event: GitHubEventPayload<W>) => S)
 
 export interface GitHubEventRule<T extends WebhookEventName = WebhookEventName> {
     /**
@@ -120,13 +124,13 @@ export interface GitHubEventRule<T extends WebhookEventName = WebhookEventName> 
     /**
      * Whether to skip this rule and continue with other event rules / the main rule.
      */
-    pass?: boolean | ((event: GitHubEventPayload<T>) => boolean)
+    pass?: GitHubEventFilterValueOrCallback<boolean, T>
 
     /**
      * Whether to skip this event. 
      * If skipped on any rule, the event will not continue (also not on the main rule).
      */
-    skip?: boolean | ((event: GitHubEventPayload<T>) => boolean)
+    skip?: GitHubEventFilterValueOrCallback<boolean, T>
 
     /**
      * Add a custom filter to this rule.

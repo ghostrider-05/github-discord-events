@@ -6,6 +6,7 @@ import { DiscordWebhookUser, WebhookStorage, WebhookManager } from "../discord/w
 import { checkGitHubRules } from "../filter.js"
 import { RuleBuilder } from "./builder.js"
 import { GitHubResponse, RequestGitHubData, ResponseCreateManager } from "./response.js"
+import { responseOptions } from './responseOptions.js'
 
 import type { 
     GitHubEventFilter, 
@@ -37,7 +38,7 @@ export class GitHubEventManager {
 
     /**
      * The Discord API version to use
-     * @default 9
+     * @default 10
      */
     public readonly apiVersion: number
 
@@ -70,39 +71,11 @@ export class GitHubEventManager {
         this.webhookUser = options.user ?? defaultWebhookUser
         this.filter = options.filter ?? 'default'
 
-        this.apiVersion = options.apiVersion ?? 9
+        this.apiVersion = options.apiVersion ?? 10
 
         WebhookStorage.setAction(options.fetchWebhook)
 
-        this.createResponse = GitHubResponse.createManager({
-            'invalid': (data, rule) => [{
-                statusText: 'Received invalid GitHub webhook event',
-                status: 500,
-                completed: false,
-                event: undefined
-            }],
-            'unknown': (data, rule) => [{
-                status: 404,
-                statusText: 'Received GitHub event, but no rules matched',
-                data,
-                completed: false,
-                event: undefined
-            }],
-            'unverified': (data, rule) => [{
-                statusText: 'Received unverified GitHub webhook event',
-                status: 500,
-                completed: false,
-                event: undefined,
-                data
-            }],
-            'complete': (data, rule, complete) => [{
-                statusText: 'Completed GitHub event',
-                completed: complete ?? true,
-                data,
-                rule,
-                event: undefined
-            }]
-        }, options.response?.includePayload ?? true)
+        this.createResponse = GitHubResponse.createManager(...responseOptions(options.response))
     }
 
     /**
@@ -146,7 +119,7 @@ export class GitHubEventManager {
             const embeds = rule.transformEmbed?.(event, defaultEmbed) ?? defaultEmbed
             const message = rule.transformMessage?.(event, embeds) ?? (embeds ? { embeds } : {})
 
-            const messageData = Resolvers.message(message, this.webhookUser)
+            const messageData = Resolvers.message(message, this.webhookUser, rule.threadName)
             const webhook = rule.webhook ?? this.rules.webhook
             const webhookManager = new WebhookManager({
                 version: this.apiVersion,
@@ -176,7 +149,6 @@ export class GitHubEventManager {
 
             const completed = await webhookManager.post(messageData, {
                 thread_id: rule.threadId,
-                thread_name: rule.threadName,
                 wait: rule.wait
             }).then(res => res.ok)
 

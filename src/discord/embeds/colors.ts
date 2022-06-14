@@ -1,6 +1,6 @@
 import type { WebhookEventName } from "@octokit/webhooks-types";
 
-import { Formatters } from "../../data/format.js";
+import { formatters } from "../../data/format.js";
 
 import type { GitHubEventActions, GitHubEventMap } from "../../github.js";
 
@@ -18,8 +18,6 @@ function hslToHex(h: number, s: number, l: number) {
 
     return Number(`0x${f(0)}${f(8)}${f(4)}`)
 }
-
-const formatters = new Formatters()
 
 export type HSLColor = [number, number, number]
 

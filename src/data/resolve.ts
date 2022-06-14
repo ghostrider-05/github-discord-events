@@ -1,7 +1,7 @@
 import type {
     RESTPostAPIWebhookWithTokenJSONBody,
     RESTPostAPIWebhookWithTokenQuery
-} from "discord-api-types/v9"
+} from "discord-api-types/v10"
 import type { WebhookClientData } from "discord.js"
 
 import { defaultWebhookUser } from "./Constants.js"
@@ -34,11 +34,13 @@ const resolveBody = (data: string | null | undefined, maxLength: number) => {
 
 const resolveMessage = (
     message: DiscordWebhookMessage,
-    user?: DiscordWebhookUser
+    user?: DiscordWebhookUser,
+    thread_name?: string
 ): RESTPostAPIWebhookWithTokenJSONBody => {
     const { username, avatarURL } = user ?? defaultWebhookUser
     return {
         ...message,
+        thread_name,
         username,
         avatar_url: avatarURL
     }

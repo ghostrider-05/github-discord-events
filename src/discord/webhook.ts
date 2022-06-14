@@ -2,7 +2,7 @@ import type {
     RESTPostAPIWebhookWithTokenJSONBody,
     RESTPostAPIWebhookWithTokenQuery,
     RESTGetAPIWebhookWithTokenResult
-} from "discord-api-types/v9"
+} from "discord-api-types/v10"
 import type {
     WebhookClientData,
     WebhookClientDataIdWithToken,
@@ -20,6 +20,7 @@ export type DiscordWebhookUser = Required<Pick<
 export type DiscordWebhookMessage = Omit<
     RESTPostAPIWebhookWithTokenJSONBody,
     | 'attachments'
+    | 'thread_name'
     | 'username'
     | 'avatar_url'
 >
@@ -126,7 +127,7 @@ export class WebhookManager {
 
     public async post(
         body: RESTPostAPIWebhookWithTokenJSONBody,
-        options: RESTPostAPIWebhookWithTokenQuery & { thread_name?: string } // TODO: remove when -types releases
+        options: RESTPostAPIWebhookWithTokenQuery
     ) {
         const url = this.url(options)
         if (!body.content && !body.embeds) {

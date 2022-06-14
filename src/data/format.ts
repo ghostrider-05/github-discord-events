@@ -16,11 +16,11 @@ type CamelCase<K> = K extends string ? CamelCaseStringArray<SplitOnWordSeparator
  * Format default strings from the payload to readable outputs.
  * Also includes util methods for string formatting
  */
-export class Formatters {
+export const formatters = new class Formatters {
     // Utils
 
-    public capitalize (input: string) {
-        return input[0].toUpperCase() + input.slice(1)
+    public capitalize <T extends string>(input: T): Capitalize<T> {
+        return (input[0].toUpperCase() + input.slice(1)) as Capitalize<T>
     }
 
     public camelCase <T extends string>(string: T): CamelCase<T> {
@@ -31,6 +31,10 @@ export class Formatters {
 
     public mdLink (name: string, url: string) {
         return `[${name}](${url})`
+    }
+
+    public snakeCase (string: string) {
+        return string.trim().split(/(?=[A-Z])/).join('_').toLowerCase()
     }
 
     public substring (string: string, limit: number) {

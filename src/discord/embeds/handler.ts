@@ -4,9 +4,9 @@ import type {
     WebhookEvent,
     WebhookEventName
 } from "@octokit/webhooks-types"
-import type { APIEmbed } from "discord-api-types/v9"
+import type { APIEmbed } from "discord-api-types/v10"
 
-import { Formatters } from "../../data/format.js"
+import { formatters } from "../../data/format.js"
 import { Resolvers } from "../../data/resolve.js"
 import { DiscordEmbedColors } from "./colors.js"
 
@@ -144,7 +144,7 @@ export type EmbedHandlers = {
 // Embed
 
 export const EmbedTitle = new class EmbedTitle {
-    public formatters = new Formatters()
+    public formatters = formatters
 
     /** @deprecated */
     public format(input: string) {
