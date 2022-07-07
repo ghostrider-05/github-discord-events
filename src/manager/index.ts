@@ -46,11 +46,10 @@ export class GitHubEventManager {
      * Validate incoming webhook requests with a configured secret.
      * This function is not yet implemented to ensure that the crypto will work on every platform.
      * See the example with the 'crypto' module
-     * @param request The incoming 
+     * @param request The incoming request
      * @param key The signature key with the request
      * @default (request, key) => true
      * @example
-     * ```js
      * manager.validateEvent: (request, key) => {
      *      if (!key) return false // Disallow non-secret hook
             const sig = Buffer.from(key, 'utf8')
@@ -60,7 +59,6 @@ export class GitHubEventManager {
                 return console.log(`Request body digest (${digest}) did not match webhook (${sig})`)
             }
      * }
-     * ```
      */
     public validateEvent?: (request: Request, key: string | null) => boolean = undefined
 

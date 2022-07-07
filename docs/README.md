@@ -5,8 +5,8 @@ actions:
     - text: Get started
       link: ./guide/installing
       type: primary
-    - text: Introduction
-      link: ./guide/introduction
+    - text: Reference
+      link: ./reference
       type: secondary
 features:
     - title: Highly customisable

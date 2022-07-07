@@ -1,3 +1,12 @@
+---
+prev: 
+    text: Webhook events
+    link: events
+next: 
+    text: Advanced - Discord API
+    link: ./advanced/discord-api
+---
+
 # Hosted / self hosted
 
 - For how to deploy your own code, skip to the [self hosted](#self-hosted) section
@@ -21,46 +30,136 @@ https://github-rules.ghostrider.workers.dev/api/v{api_version}
 
 | Version | Status    |
 | ------- | --------- |
-| 1       | Available |
+| 0       | Available |
 
 #### POST `/`
 
-Create a new webhook. Returns `200` with a new id on success.
+Create a new webhook. Returns `200` with a new id on success. Then in GitHub the `/:id/github` route can be used for webhook events.
 
 JSON Params
 
-| Name  | type                   | Required |
-| ----- | ---------------------- | -------- |
-| rules | GitHubEventRulesConfig | true     |
+| Name  | type                                                                                 | Required |
+| ----- | ------------------------------------------------------------------------------------ | -------- |
+| rules | [GitHubEventRawRulesConfig](./reference/type_aliases/githubeventrawrulesconfig.html) | true     |
 
-#### GET `/`
+#### GET `/:id/rules`
 
-Query Params
+Get the rules for an event manager
 
-| Name | type   | Required |
-| ---- | ------ | -------- |
-| id   | string | true     |
+#### GET `/:id/webhooks`
 
-#### DELETE `/`
+Get the registered webhooks for an event manager
 
-Query Params
+#### POST `/:id/webhooks/validate`
 
-| Name | type   | Required |
-| ---- | ------ | -------- |
-| id   | string | true     |
+Validate the registered webhooks. Returns `200` with the webhooks that passed the validation
+
+Params
+
+| Position | Name    | type   | Required | Description                                              |
+| -------- | ------- | ------ | -------- | -------------------------------------------------------- |
+| Query    | version | number | false    | Only pass webhooks using this version of the Discord API |
+
+Example result
+
+```json
+{
+    "passed": [
+        "https://discord.com/api/v10/webhooks/id/token"
+    ],
+    "failed": []
+}
+```
+
+#### POST `/webhooks/validate`
+
+Validate a Discord webhook
+
+| Position | Name              | Type   | Required | Description                 |
+| -------- | ----------------- | ------ | -------- | --------------------------- |
+| Headers  | X-Discord-Webhook | string | true     | The webhook url to validate |
+
+Returns `204` when the webhook is correctly validated
+
+#### DELETE `/:id/`
+
+Delete an event manager with all associated rules and webhooks. Returns `200` with the deleted rules and webhooks.
+
+Example result
+
+```json
+{
+    "rules": {
+        "webhook": { 
+            "url": "https://discord.com/api/v10/id/token"
+        },
+        "actions": ["reopened"],
+        "events": [
+            {
+                "name": "issues",
+                "webhook": {
+                    "id": "random_id",
+                    "token": "token"
+                },
+                "main": false
+            }
+        ]
+    },
+    "webhooks": [
+        "https://discord.com/api/v10/id/token",
+        "https://discord.com/api/v10/random_id/token"
+    ]
+}
+```
 
 ## Self hosted
 
-// Add guide
+This package will work out of the box on any platform with:
 
-### Serverless
+- `Response` and `Request` implementations
+- native `fetch` function
 
-:::tip Platforms
-This guide is suitable for most platforms, including:
+:::tip Platform examples
+Serverless, including:
 
 - CF workers
 - Vercel
 
+Node.js:
+[Version 17.5+](https://nodejs.org/docs/latest-v18.x/api/globals.html#fetch)
+
 :::
 
-### Node.js
+### Node.js 17.5-
+
+If you are running code on your server with Node.js 17.4 or lower or with the [`--no-experimental-fetch`](https://nodejs.org/docs/latest-v18.x/api/cli.html#--no-experimental-fetch) flag, you will need to add support for `fetch`.
+
+```sh
+npm install node-fetch
+```
+
+After installing `node-fetch`, add a new script that will update this package:
+
+```js
+// ./scripts/adapt.js
+import { resolve } from 'path'
+import * as fs from 'fs'
+
+const files = [
+    'discord/webhook.d.ts', 
+    'discord/webhook.js'
+]
+const dir = './node_modules/github-discord-events/'
+
+const options = { encoding: 'utf8' }
+const importFetch = `import fetch from 'node-fetch'`
+
+files.forEach(file => {
+    const path = resolve('.', dir + file)
+    const content = `${importFetch}\n${fs.readFileSync(path, options)}`
+
+    fs.writeFileSync(path, content, options)
+})
+```
+
+Every time you update `github-discord-events`, run `node ./scripts/adapts.js` to implement the correct `fetch` implementation.

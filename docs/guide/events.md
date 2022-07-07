@@ -1,3 +1,9 @@
+---
+prev: getting-started
+next: 
+    text: Deployment
+    link: hosted
+---
 
 # Events
 

@@ -28,12 +28,27 @@ export const emittedEvents: EmittedEvents = {
     star: ['created']
 }
 
+export interface DiscordEventFilterOptions { 
+    /**
+     * The name of the incoming webhook event
+     */
+    name: keyof EmittedEvents, 
+    /**
+     * The action of the incoming webhook event
+     */
+    action: string, 
+    /**
+     * Whether to filter non-default events
+     */
+    filterEvents: boolean 
+}
+
 /**
  * Check if the event should be sent by default
  * @param event 
  * @returns Whether the event should be blocked
  */
-export function stopFilter(event: { name: keyof EmittedEvents, action: string, filterEvents: boolean }) {
+export function stopFilter(event: DiscordEventFilterOptions) {
     if (!event.filterEvents) return false
 
     const actions = emittedEvents[event.name]

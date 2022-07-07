@@ -19,6 +19,7 @@ Why not another package?
 - hosted solution or handle requests self hosted (without a token)
 - typed webhook payloads for every incoming event
 - improves deliveries messages on GitHub
+- no dependencies
 
 ## How to use
 
@@ -31,4 +32,4 @@ Why not another package?
 ## Documentation & Examples
 
 - [Documentation](https://ghostrider-05.github.io/github-discord-events/)
-- [Examples](https://ghostrider-05.github.io/github-discord-events/examples/stars)
+- [Examples](https://ghostrider-05.github.io/github-discord-events/examples/)

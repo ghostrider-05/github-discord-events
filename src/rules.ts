@@ -201,6 +201,11 @@ export interface GitHubEventFinalUploadData {
 export interface GitHubEventRulesConfig extends Omit<GitHubEventRule & {
     webhook: WebhookClientData
 }, 'name' | 'main' | GitHubCustomEventRuleFilters> {
+    /**
+     * An identifier for this rule
+     */
+    tag?: string
+
     // GitHub
 
     /**
@@ -225,4 +230,23 @@ export interface GitHubEventRulesConfig extends Omit<GitHubEventRule & {
      * @param rule The passed rule, not present when the rule is not an event rule
      */
     onBeforeActivated?: (discord: GitHubDiscordFinalUploadData, event: GitHubEventFinalUploadData) => Promise<void> | void
+}
+
+type GitHubEventRawOmittedKeys = 
+    | 'onCheck'
+    | 'onFailed'
+    | 'onTrigger'
+    | 'transformEmbed'
+    | 'transformMessage'
+    | 'addFilter'
+    | 'addReplacingFilter'
+
+export type GitHubEventRawRule = Omit<GitHubEventRule, GitHubEventRawOmittedKeys>
+
+export type GitHubEventRawRulesConfig = Omit<GitHubEventRulesConfig,
+    | GitHubEventRawOmittedKeys
+    | 'handleFileUploads' 
+    | 'onBeforeActivated'
+> & {
+    events?: GitHubEventRawRule[]
 }

@@ -7,6 +7,23 @@ export type GitHubEventFilter =
     | 'default'
     | 'all'
 
+export interface GitHubEventManagerResponseOptions {
+    /**
+     * Include the payload in the response body
+     * @deprecated
+     * @default true
+     */
+    includePayload?: boolean
+
+    /**
+     * The values (specified by their keys) to include in the response body.
+     * Keys:
+     * - payload: the event payload
+     * @default []
+     */
+    includeKeys?: ('payload')[]
+}
+
 export interface GitHubEventManagerOptions {
     /**
      * The rules to use for filtering / sending events.
@@ -14,7 +31,7 @@ export interface GitHubEventManagerOptions {
     rules: GitHubEventRulesConfig
     /**
      * The Discord API version to use for webhook requests.
-     * @default 9
+     * @default 10
      */
     apiVersion?: number
     /**
@@ -41,13 +58,7 @@ export interface GitHubEventManagerOptions {
     /**
      * Options for the response of the event handler
      */
-    response?: {
-        /**
-         * Include the payload in the response body
-         * @default true
-         */
-        includePayload?: boolean
-    }
+    response?: GitHubEventManagerResponseOptions
 
     // Improves relative links like #42
     // Check autolinks

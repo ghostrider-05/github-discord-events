@@ -1,4 +1,5 @@
-import { defineUserConfig, defaultTheme, viteBundler } from 'vuepress'
+import { defineUserConfig, viteBundler } from 'vuepress'
+import { localTheme } from './theme/index.cjs'
 
 export default defineUserConfig({
     lang: 'en-US',
@@ -6,16 +7,16 @@ export default defineUserConfig({
     description: 'Package to customize your GitHub webhook messages to Discord',
     base: '/github-discord-events/',
     bundler: viteBundler({
-        viteOptions: {
-            // @ts-expect-error
-            ssr: {
-                noExternal: ['@discord-message-components/vue']
-            }
-        }
+        viteOptions: { }
     }),
-    theme: defaultTheme({
+    head: [
+        ['link', { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css'}]
+    ],
+
+    theme: localTheme({
         docsBranch: 'master',
         repo: 'ghostrider-05/github-discord-events',
+        contributors: false,
         navbar: [
             {
                 text: 'Guide',
@@ -23,11 +24,11 @@ export default defineUserConfig({
             },
             {
                 text: 'Reference',
-                link: '/reference.md'
+                link: '/reference/'
             },
             {
                 text: 'Examples',
-                link: '/examples/stars'
+                link: '/examples/'
             }
         ],
         sidebarDepth: 2,
@@ -49,7 +50,7 @@ export default defineUserConfig({
                             link: '/guide/events'
                         },
                         {
-                            text: 'Hosting options',
+                            text: 'Deployment',
                             link: '/guide/hosted'
                         }
                     ]
@@ -64,14 +65,30 @@ export default defineUserConfig({
                 }],
             '/examples/': [
                 {
-                    text: 'Star counting',
-                    link: 'stars'
-                },
-                {
-                    text: 'Issue image',
-                    link: 'image'
+                    text: 'Implementations',
+                    children: [
+                        {
+                            text: 'Star counting',
+                            link: '/examples/implementations/stars'
+                        },
+                        {
+                            text: 'Issue image',
+                            link: '/examples/implementations/image',
+                        }
+                    ]
                 }
-            ]
+            ],
+            // '/reference': [
+            //     {
+            //         text: 'Reference',
+            //         collapsible: true,
+            //         children: [
+            //             {
+            //                 t
+            //             }
+            //         ]
+            //     }
+            // ]
         }
     })
 })

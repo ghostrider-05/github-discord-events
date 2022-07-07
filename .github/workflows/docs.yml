@@ -17,18 +17,10 @@ jobs:
           # fetch all commits to get last updated time or other git log info
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: '14'
-
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Install node.js v14
+      - name: Install node.js v16
         uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: 16
           cache: npm
 
       - name: Install dependencies

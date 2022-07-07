@@ -1,4 +1,5 @@
 import type { WebhookEventName } from "@octokit/webhooks-types"
+import { Resolvers } from "../data/resolve.js"
 
 import type { GitHubEventRulesConfig, GitHubEventRule } from "../rules.js"
 
@@ -37,6 +38,16 @@ import type { GitHubEventRulesConfig, GitHubEventRule } from "../rules.js"
 
             return RuleBuilder.event<T>(event)
         })
+    }
+
+    public static validateWebhook (webhook: GitHubEventRulesConfig['webhook']) {
+        try {
+            const url = Resolvers.webhook(webhook, {}, 10)
+
+            return Resolvers.webhookRegex.test(url)
+        } catch {
+            return false
+        }
     }
 
     /**

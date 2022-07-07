@@ -1,3 +1,7 @@
+---
+next: getting-started 
+---
+
 # Introduction
 
 This package is an easy, but highly configurable, way to customize your GitHub webhook messages to Discord.
@@ -19,3 +23,4 @@ Why a(nother) package to send webhooks? The `/github` appendix to the Discord we
 - hosted solution or handle requests self hosted (without a token)
 - typed webhook payloads for every incoming event
 - improves deliveries messages on GitHub
+- no dependencies

@@ -2,15 +2,15 @@
 
 ## Rate limits
 
-### Adding components
+## Interaction components
 
-A workaround to add components (buttons, modals, etc.) is to create an application webhook (see [the Discord documentation](https://discord.com/developers/docs/resources/webhook#execute-webhook-jsonform-params)). Then this application webhook
+A workaround to add components (buttons, modals, etc.) is to create an application webhook (see [the Discord documentation](https://discord.com/developers/docs/resources/webhook#execute-webhook-jsonform-params)). Then this application webhook is able to create messages with components.
 
 ```ts
 // bot.ts
 import { Client } from 'discord.js'
 
-const client = new Client({ intents: 0 })
+const client = new Client({ intents })
 const channelId = 'channel_id'
 
 // For these examples the Discord.js Client will be used.
@@ -20,7 +20,9 @@ client.once('ready', () => {
 
     // Create a new application webhook in the channel
     const channel = client.guilds.cache.get('guild_id').channels.cache.get(channelId)
-    const webhook = await channel.createWebhook('GitHubDiscord')
+    const webhook = await channel.createWebhook({
+        name: 'GitHubDiscord'
+    })
     
     // Store the url / id in a .env file
     console.log(webhook?.url, webhook?.id)
@@ -63,8 +65,19 @@ const rules = new RuleBuilder({ url: process.env.WEBHOOK_URL! })
             ]
         }
     })
-    .setFilter('onBeforeActivated', (msg, webhook, rule) => {
-        
+    .setFilter('onBeforeActivated', async ({ message }, { payload }) => {
+        // Before posting the release in Discord, also post it to Reddit
+        await fetch('https://reddit.com/api/submit', {
+            method: 'POST',
+            body: JSON.stringify({
+                url: payload.release.html_url,
+                kind: 'url',
+                resubmit: true,
+                title: message.embeds[0].title,
+                sr: 'hello_world' // The name of the subreddit
+            }),
+            headers
+        })
     })
 
 const manager = new GitHubRulesManager({ rules })

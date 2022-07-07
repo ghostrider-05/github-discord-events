@@ -14,6 +14,11 @@ export class DiscordWebhookEmbed {
 
     public static embedColor = DiscordEmbedColors
 
+    /**
+     * Get the default embed for an incoming webhook event
+     * @param event 
+     * @param options Options for creating the embed
+     */
     public static resolveEmbed(event: WebhookEvent, options: DefaultEmbedCreateOptions) {
         const key = (Object.keys(CombinedHandlerKeys).find(key => {
             const events = CombinedHandlerKeys[key as keyof typeof CombinedHandlerKeys]
@@ -29,8 +34,9 @@ export class DiscordWebhookEmbed {
 
     /**
      * Get the url for a GitHub embed image preview
-     * @param path the relative path: https://github.com/{path} \
-     * Examples:
+     * @param path the relative path: https://github.com/{path}
+     * 
+     * @example
      * - issues: org/repo/issues/1
      * - repo: user/repo
      */

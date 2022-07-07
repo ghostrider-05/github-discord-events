@@ -49,5 +49,7 @@ const resolveMessage = (
 export const Resolvers = {
     body: resolveBody,
     message: resolveMessage,
-    webhook: resolveWebhook
+    webhook: resolveWebhook,
+    // https://github.com/discordjs/discord.js/blob/main/packages/discord.js/src/client/WebhookClient.js#L33
+    webhookRegex: /https?:\/\/(?:ptb\.|canary\.)?discord\.com\/api(?:\/v\d{1,2})?\/webhooks\/(\d{17,19})\/([\w-]{68})/i
 }

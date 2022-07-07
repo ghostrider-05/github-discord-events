@@ -70,9 +70,7 @@ export class WebhookManager {
     private parseUrl() {
         const url = 'url' in this.webhook ? this.webhook.url : undefined
 
-        const matches = url?.match(
-            /https?:\/\/(?:ptb\.|canary\.)?discord\.com\/api(?:\/v\d{1,2})?\/webhooks\/(\d{17,19})\/([\w-]{68})/i
-        )
+        const matches = url?.match(Resolvers.webhookRegex)
 
         if (!matches) return undefined
         const [, id, token] = matches.map(n => n);
@@ -122,7 +120,9 @@ export class WebhookManager {
             headers: {
                 'Content-Type': 'application/json'
             }
-        }).then(res => res.json()) as RESTGetAPIWebhookWithTokenResult | undefined
+        }).then(async res => {
+            return res.ok ? await res.json() : undefined
+        }) as RESTGetAPIWebhookWithTokenResult | undefined
     }
 
     public async post(
